@@ -1,4 +1,5 @@
-import {Papa} from 'papaparse';
+// import {Papa} from 'papaparse';
+let Papa = require('papaparse');
 
 class Strategy {
     strategy; // DOM element
@@ -10,7 +11,7 @@ class Strategy {
     estimateTimeByTest = 12000; // duration estimation for one backtest (server side)
     overloadTime = 30000; // max timing allowed to waiting a backtest
     intervalTime = 500; // interval time to check when server respond a backtest
-    jumbBacktests = 0; // value to strat backtests after un specific number of tests
+    jumpBacktests = 0; // start backtests after un specific number of tests
     backtestNumber = 0; // number of processed backtests (with jumped)
 
     constructor(strategy) {
@@ -88,8 +89,8 @@ class Strategy {
             }
         }
 
-        if (options.jumbBacktests) {
-            this.jumbBacktests = options.jumbBacktests;
+        if (options.jumpBacktests) {
+            this.jumpBacktests = options.jumpBacktests;
         }
 
         this.preCalculate();
@@ -125,25 +126,24 @@ class Strategy {
             currentIndicator: '',
             associateIndicator: [],
         }
-        this.jumbBacktests = 0;
+        this.jumpBacktests = 0;
         this.backtestNumber = 0;
     }
 
     resetParameters() {
-        console.log('-> Strategy reset');
-
+        // console.log('-> Strategy reset');
         this.parameters.forEach(parameter => {
             parameter.reset();
         });
     }
 
     async validate() {
-        console.log('-> Strategy start validate');
+        // console.log('-> Strategy start validate');
         const validated = await new Promise(resolve => {
             setTimeout(() => {
                 if (this.strategy.querySelector('.overlay').style.display === 'none') {
                     // nothing to validate
-                    console.log('nothing to validate');
+                    console.warn('nothing to validate');
                     resolve(false);
                     return;
                 }
@@ -161,7 +161,7 @@ class Strategy {
             return false;
         }
 
-        console.log('-> Strategy end validate');
+        // console.log('-> Strategy end validate');
 
         return true;
     }
@@ -185,40 +185,40 @@ class Strategy {
     }
 
     async backtest(paramIndex = 0) {
-        console.log(`-> Strategy backtest [${paramIndex}]`);
+        // console.log(`-> Strategy backtest [${paramIndex}]`);
 
         if (!this.parameters[paramIndex].options.ignore) {
-            console.log(`--> parameter[${paramIndex}] to work x${this.parameters[paramIndex].count}`);
+            // console.log(`--> parameter[${paramIndex}] to work x${this.parameters[paramIndex].count}`);
             for (let i = 0; i < this.parameters[paramIndex].count; i++) {
-                console.log(`--> parameter[${paramIndex}] in for i = [${i}] set increment`);
+                // console.log(`--> parameter[${paramIndex}] in for i = [${i}] set increment`);
                 this.parameters[paramIndex].incrementValue(i);
 
                 if (paramIndex + 1 < this.parameters.length) {
-                    console.log(`--> parameter[${paramIndex}] go to parameter[${paramIndex + 1}]`);
+                    // console.log(`--> parameter[${paramIndex}] go to parameter[${paramIndex + 1}]`);
                     await this.backtest(paramIndex + 1);
                 } else {
-                    console.log(`--> parameter[${paramIndex}] validate`);
-                    if (!this.jumbBacktests || this.jumbBacktests < this.backtestNumber) {
+                    // console.log(`--> parameter[${paramIndex}] validate`);
+                    if (!this.jumpBacktests || this.jumpBacktests < this.backtestNumber) {
                         await this.validate();
                     }
                     this.backtestNumber++;
                 }
             }
     
-            console.log(`--> parameter[${paramIndex}] reset`);
+            // console.log(`--> parameter[${paramIndex}] reset`);
             this.parameters[paramIndex].reset();
         } else if (paramIndex + 1 < this.parameters.length) {
-            console.log(`--> parameter[${paramIndex}] ignored, go to parameter[${paramIndex + 1}]`);
+            // console.log(`--> parameter[${paramIndex}] ignored, go to parameter[${paramIndex + 1}]`);
             await this.backtest(paramIndex + 1);
         } else {
-            console.log(`--> parameter[${paramIndex}] ignored, that last, go validate`);
-            if (!this.jumbBacktests || this.jumbBacktests < this.backtestNumber) {
+            // console.log(`--> parameter[${paramIndex}] ignored, that last, go validate`);
+            if (!this.jumpBacktests || this.jumpBacktests < this.backtestNumber) {
                 await this.validate();
             }
             this.backtestNumber++;
         }
         
-        console.log(`--> parameter[${paramIndex}] finished`);
+        // console.log(`--> parameter[${paramIndex}] finished`);
         return true;
     }
 
@@ -270,7 +270,7 @@ class Strategy {
     exportResults() {
         console.log('-> Strategy export results');
         const fileDate = new Date().toISOString().slice(0, 10);
-        const filename = `${fileDate}_${this.infos.currency}-${this.infos.timeframe}.csv`;
+        const filename = `${fileDate}_${this.infos.currentIndicator}-${this.infos.currency}-${this.infos.timeframe}.csv`;
         // Make CSV with PapaParse
         const csv = Papa.unparse(this.results);
         const blob = new Blob([csv]);
@@ -536,7 +536,7 @@ class Parameter {
 
     sliderIncrement(cursor = 'auto') {
         if (cursor === 'auto') {   
-            console.log(`-> Parameter increment slider (auto) ${this.getCurrent()} + ${this.increment}`);
+            // console.log(`-> Parameter increment slider (auto) ${this.getCurrent()} + ${this.increment}`);
             const incrementalValue = this.getCurrent() + this.increment;
             if (incrementalValue <= this.max) {
                 this.sliderSetValue(incrementalValue);
@@ -544,8 +544,8 @@ class Parameter {
                 console.warn(`bad increment ${this.getCurrent()} + ${this.increment} for a max ${this.max} (${this.name})`);
             }
         } else {
+            // console.log(`-> Parameter increment slider (cursor ${cursor}) ${this.min} + (${this.increment} * ${cursor})`);
             const incrementalValue = this.min + (this.increment * cursor);
-            console.log(`-> Parameter increment slider (cursor ${cursor}) ${this.min} + (${this.increment} * ${cursor})`);
             if (incrementalValue <= this.max) {
                 this.sliderSetValue(incrementalValue);
             } else {
