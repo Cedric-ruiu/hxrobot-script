@@ -249,26 +249,36 @@ class Strategy {
 
         const totalTime = this.estimateTimeByTest * countTests;
 
-        console.log(`
-            --BACKTEST EVALUATION--
-            indicator: ${this.infos.currentIndicator}
-            number of parameters: ${this.parameters.length}
-            number of cursors: ${countCursor}
-            number of tests: ${countTests}
-            estimate time to full backtest indicator: ${this.msToTime(totalTime)}
-            estimate ending time: ${new Date(new Date().getTime() + totalTime).toLocaleString()}
-        `);
+        if (0 < this.jumpBacktests) {
+            const countRemainingTest = countTests - this.jumpBacktests;
+            const remainingTime = totalTime - (this.jumpBacktests * this.estimateTimeByTest)
+            console.log(`
+                --BACKTEST EVALUATION--
+                indicator: ${this.infos.currentIndicator} (${this.parameters.length} parameters with ${countCursor} cursors)
+                number of tests: ${countRemainingTest} (total: ${countTests} // jump to: ${this.jumpBacktests})
+                estimate time to full backtest indicator: ${this.msToTime(remainingTime)} (total: ${this.msToTime(totalTime)})
+                estimate ending time: ${new Date(new Date().getTime() + remainingTime).toLocaleString()}
+            `);
+        } else {
+            console.log(`
+                --BACKTEST EVALUATION--
+                indicator: ${this.infos.currentIndicator} (${this.parameters.length} parameters with ${countCursor} cursors)
+                number of tests: ${countTests}
+                estimate time to full backtest indicator: ${this.msToTime(totalTime)}
+                estimate ending time: ${new Date(new Date().getTime() + totalTime).toLocaleString()}
+            `);
+        }
     }
 
     saveResults() {
-        console.log('-> Strategy save results');
+        // console.log('-> Strategy save results');
         const additionalData = [];
         additionalData['date'] = new Date().toLocaleString();
         this.results.push({...additionalData, ...this.getPerfData(), ...this.getParamData()})
     }
 
     exportResults() {
-        console.log('-> Strategy export results');
+        // console.log('-> Strategy export results');
         const fileDate = new Date().toISOString().slice(0, 10);
         const filename = `${fileDate}_${this.infos.currentIndicator}-${this.infos.currency}-${this.infos.timeframe}.csv`;
         // Make CSV with PapaParse
@@ -628,6 +638,7 @@ let strategy = new Strategy(0);
 //     3: {increment: 1, min: 2, max: 3},
 //     4: {increment: 1, min: 2, max: 3},
 //     5: {ignore: true},
+//     jumpBacktests: 1255,
 // })
 
 // strategy.start();

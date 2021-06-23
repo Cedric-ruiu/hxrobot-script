@@ -1273,7 +1273,7 @@ var Strategy = class {
     __publicField(this, "estimateTimeByTest", 12e3);
     __publicField(this, "overloadTime", 3e4);
     __publicField(this, "intervalTime", 500);
-    __publicField(this, "jumbBacktests", 0);
+    __publicField(this, "jumpBacktests", 0);
     __publicField(this, "backtestNumber", 0);
     if (typeof strategy2 === "string") {
       this.strategy = document.getElementById(strategy2);
@@ -1322,8 +1322,8 @@ var Strategy = class {
         this.parameters.push(new Parameter(parametersDOM[i], parameterOptions));
       }
     }
-    if (options.jumbBacktests) {
-      this.jumbBacktests = options.jumbBacktests;
+    if (options.jumpBacktests) {
+      this.jumpBacktests = options.jumpBacktests;
     }
     this.preCalculate();
   }
@@ -1347,21 +1347,19 @@ var Strategy = class {
       currentIndicator: "",
       associateIndicator: []
     };
-    this.jumbBacktests = 0;
+    this.jumpBacktests = 0;
     this.backtestNumber = 0;
   }
   resetParameters() {
-    console.log("-> Strategy reset");
     this.parameters.forEach((parameter) => {
       parameter.reset();
     });
   }
   async validate() {
-    console.log("-> Strategy start validate");
     const validated = await new Promise((resolve) => {
       setTimeout(() => {
         if (this.strategy.querySelector(".overlay").style.display === "none") {
-          console.log("nothing to validate");
+          console.warn("nothing to validate");
           resolve(false);
           return;
         }
@@ -1375,7 +1373,6 @@ var Strategy = class {
     } else {
       return false;
     }
-    console.log("-> Strategy end validate");
     return true;
   }
   async validateWaiting(autoSave = true) {
@@ -1402,7 +1399,7 @@ var Strategy = class {
         if (paramIndex + 1 < this.parameters.length) {
           await this.backtest(paramIndex + 1);
         } else {
-          if (!this.jumbBacktests || this.jumbBacktests < this.backtestNumber) {
+          if (!this.jumpBacktests || this.jumpBacktests < this.backtestNumber) {
             await this.validate();
           }
           this.backtestNumber++;
@@ -1412,7 +1409,7 @@ var Strategy = class {
     } else if (paramIndex + 1 < this.parameters.length) {
       await this.backtest(paramIndex + 1);
     } else {
-      if (!this.jumbBacktests || this.jumbBacktests < this.backtestNumber) {
+      if (!this.jumpBacktests || this.jumpBacktests < this.backtestNumber) {
         await this.validate();
       }
       this.backtestNumber++;
@@ -1440,24 +1437,32 @@ var Strategy = class {
       }
     });
     const totalTime = this.estimateTimeByTest * countTests;
-    console.log(`
-            --BACKTEST EVALUATION--
-            indicator: ${this.infos.currentIndicator}
-            number of parameters: ${this.parameters.length}
-            number of cursors: ${countCursor}
-            number of tests: ${countTests}
-            estimate time to full backtest indicator: ${this.msToTime(totalTime)}
-            estimate ending time: ${new Date(new Date().getTime() + totalTime).toLocaleString()}
-        `);
+    if (0 < this.jumpBacktests) {
+      const countRemainingTest = countTests - this.jumpBacktests;
+      const remainingTime = totalTime - this.jumpBacktests * this.estimateTimeByTest;
+      console.log(`
+                --BACKTEST EVALUATION--
+                indicator: ${this.infos.currentIndicator} (${this.parameters.length} parameters with ${countCursor} cursors)
+                number of tests: ${countRemainingTest} (total: ${countTests} // jump to: ${this.jumpBacktests})
+                estimate time to full backtest indicator: ${this.msToTime(remainingTime)} (total: ${this.msToTime(totalTime)})
+                estimate ending time: ${new Date(new Date().getTime() + remainingTime).toLocaleString()}
+            `);
+    } else {
+      console.log(`
+                --BACKTEST EVALUATION--
+                indicator: ${this.infos.currentIndicator} (${this.parameters.length} parameters with ${countCursor} cursors)
+                number of tests: ${countTests}
+                estimate time to full backtest indicator: ${this.msToTime(totalTime)}
+                estimate ending time: ${new Date(new Date().getTime() + totalTime).toLocaleString()}
+            `);
+    }
   }
   saveResults() {
-    console.log("-> Strategy save results");
     const additionalData = [];
     additionalData["date"] = new Date().toLocaleString();
     this.results.push({ ...additionalData, ...this.getPerfData(), ...this.getParamData() });
   }
   exportResults() {
-    console.log("-> Strategy export results");
     const fileDate = new Date().toISOString().slice(0, 10);
     const filename = `${fileDate}_${this.infos.currentIndicator}-${this.infos.currency}-${this.infos.timeframe}.csv`;
     const csv = Papa.unparse(this.results);
@@ -1675,7 +1680,6 @@ var Parameter = class {
   }
   sliderIncrement(cursor = "auto") {
     if (cursor === "auto") {
-      console.log(`-> Parameter increment slider (auto) ${this.getCurrent()} + ${this.increment}`);
       const incrementalValue = this.getCurrent() + this.increment;
       if (incrementalValue <= this.max) {
         this.sliderSetValue(incrementalValue);
@@ -1684,7 +1688,6 @@ var Parameter = class {
       }
     } else {
       const incrementalValue = this.min + this.increment * cursor;
-      console.log(`-> Parameter increment slider (cursor ${cursor}) ${this.min} + (${this.increment} * ${cursor})`);
       if (incrementalValue <= this.max) {
         this.sliderSetValue(incrementalValue);
       } else {
