@@ -49,3 +49,20 @@ strategy.init({
 ```javascript
 strategy.start();
 ```
+
+## Supported indicators
+
+| indicator | support | nb parameters |
+|-----------|---------|---------------|
+| Random | :heavy_check_mark: | 3 |
+| Payout | :heavy_check_mark: | 5 |
+| SAR | :heavy_check_mark: | 7 |
+| Orderflow | :heavy_check_mark: | 8 |
+| Delta div | :heavy_check_mark: | 7 |
+| Streak | :x: | 6 |
+| Stoch | :heavy_check_mark: | 6 |
+| Bollinger | :heavy_check_mark: | 5 |
+| MACD | :heavy_check_mark: |  |
+| RSI | :heavy_check_mark: | 6 |
+| Orderbook | :x: | 7 |
+| Autocorr | :heavy_check_mark: | 10 |
