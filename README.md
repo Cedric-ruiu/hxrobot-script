@@ -62,7 +62,7 @@ strategy.start();
 | Streak | :x: | 6 |
 | Stoch | :heavy_check_mark: | 6 |
 | Bollinger | :heavy_check_mark: | 5 |
-| MACD | :heavy_check_mark: |  |
+| MACD | :heavy_check_mark: | 5 |
 | RSI | :heavy_check_mark: | 6 |
 | Orderbook | :x: | 7 |
 | Autocorr | :heavy_check_mark: | 10 |
