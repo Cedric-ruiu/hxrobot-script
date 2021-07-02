@@ -13,6 +13,7 @@ class Strategy {
     intervalTime = 500; // interval time to check when server respond a backtest
     jumpBacktests = 0; // start backtests after un specific number of tests
     backtestNumber = 0; // number of processed backtests (with jumped)
+    debug = false;
 
     constructor(strategy) {
         if (typeof strategy === 'string') {
@@ -131,14 +132,14 @@ class Strategy {
     }
 
     resetParameters() {
-        // console.log('-> Strategy reset');
+        if (this.debug) console.log('-> Strategy reset');
         this.parameters.forEach(parameter => {
             parameter.reset();
         });
     }
 
     async validate() {
-        // console.log('-> Strategy start validate');
+        if (this.debug) console.log('-> Strategy start validate');
         const validated = await new Promise(resolve => {
             setTimeout(() => {
                 if (this.strategy.querySelector('.overlay').style.display === 'none') {
@@ -161,7 +162,7 @@ class Strategy {
             return false;
         }
 
-        // console.log('-> Strategy end validate');
+        if (this.debug) console.log('-> Strategy end validate');
 
         return true;
     }
@@ -185,19 +186,19 @@ class Strategy {
     }
 
     async backtest(paramIndex = 0) {
-        // console.log(`-> Strategy backtest [${paramIndex}]`);
+        if (this.debug) console.log(`-> Strategy backtest [${paramIndex}]`);
 
         if (!this.parameters[paramIndex].options.ignore) {
-            // console.log(`--> parameter[${paramIndex}] to work x${this.parameters[paramIndex].count}`);
+            if (this.debug) console.log(`--> parameter[${paramIndex}] to work x${this.parameters[paramIndex].count}`);
             for (let i = 0; i < this.parameters[paramIndex].count; i++) {
-                // console.log(`--> parameter[${paramIndex}] in for i = [${i}] set increment`);
+                if (this.debug) console.log(`--> parameter[${paramIndex}] in for i = [${i}] set increment`);
                 this.parameters[paramIndex].incrementValue(i);
 
                 if (paramIndex + 1 < this.parameters.length) {
-                    // console.log(`--> parameter[${paramIndex}] go to parameter[${paramIndex + 1}]`);
+                    if (this.debug) console.log(`--> parameter[${paramIndex}] go to parameter[${paramIndex + 1}]`);
                     await this.backtest(paramIndex + 1);
                 } else {
-                    // console.log(`--> parameter[${paramIndex}] validate`);
+                    if (this.debug) console.log(`--> parameter[${paramIndex}] validate`);
                     if (!this.jumpBacktests || this.jumpBacktests < this.backtestNumber) {
                         await this.validate();
                     }
@@ -205,20 +206,20 @@ class Strategy {
                 }
             }
     
-            // console.log(`--> parameter[${paramIndex}] reset`);
+            if (this.debug) console.log(`--> parameter[${paramIndex}] reset`);
             this.parameters[paramIndex].reset();
         } else if (paramIndex + 1 < this.parameters.length) {
-            // console.log(`--> parameter[${paramIndex}] ignored, go to parameter[${paramIndex + 1}]`);
+            if (this.debug) console.log(`--> parameter[${paramIndex}] ignored, go to parameter[${paramIndex + 1}]`);
             await this.backtest(paramIndex + 1);
         } else {
-            // console.log(`--> parameter[${paramIndex}] ignored, that last, go validate`);
+            if (this.debug) console.log(`--> parameter[${paramIndex}] ignored, that last, go validate`);
             if (!this.jumpBacktests || this.jumpBacktests < this.backtestNumber) {
                 await this.validate();
             }
             this.backtestNumber++;
         }
         
-        // console.log(`--> parameter[${paramIndex}] finished`);
+        if (this.debug) console.log(`--> parameter[${paramIndex}] finished`);
         return true;
     }
 
@@ -271,14 +272,14 @@ class Strategy {
     }
 
     saveResults() {
-        // console.log('-> Strategy save results');
+        if (this.debug) console.log('-> Strategy save results');
         const additionalData = [];
         additionalData['date'] = new Date().toLocaleString();
         this.results.push({...additionalData, ...this.getPerfData(), ...this.getParamData()})
     }
 
     exportResults() {
-        // console.log('-> Strategy export results');
+        if (this.debug) console.log('-> Strategy export results');
         const fileDate = new Date().toISOString().slice(0, 10);
         const filename = `${fileDate}_${this.infos.currentIndicator}-${this.infos.currency}-${this.infos.timeframe}.csv`;
         // Make CSV with PapaParse
@@ -365,15 +366,18 @@ class Parameter {
         this.parameterDOM = elementDOM;
         this.name = this.parameterDOM.querySelector('.element-title').outerText;
         
-        if (this.parameterDOM.querySelector('.vue-js-switch')) {
+        if (this.parameterDOM.querySelector('.input-false')) {
+            this.optionalSliderInit(options);
+        } else if (this.parameterDOM.querySelector('.vue-js-switch')) {
             this.switchInit(options);
         } else if (this.parameterDOM.querySelector('.vue-slider')) {
             this.sliderInit(options);
+        } else if (this.parameterDOM.querySelector('select.option')) {
+            this.selectInit(options);
         } else {
             console.error('unknown parameter');
             console.error(this.parameterDOM);
         }
-        // TODO: type select
     }
 
     reset() {
@@ -389,7 +393,11 @@ class Parameter {
                 break;
 
             case 'select':
-                // TODO: this.selectReset();
+                this.selectReset();
+                break;
+
+            case 'optionalSlider':
+                // TODO: type optionalSlider
                 break;
         }
     }
@@ -405,7 +413,11 @@ class Parameter {
                 break;
 
             case 'select':
-                // TODO: this.selectDebug();
+                this.selectDebug();
+                break;
+
+            case 'optionalSlider':
+                // TODO: type optionalSlider
                 break;
         }
     }
@@ -414,14 +426,16 @@ class Parameter {
         switch (this.type) {
             case 'switch':
                 return this.switchDOM.classList.contains('toggled');
-                break;
         
             case 'slider':
-                return parseInt(this.sliderDotDOM.getAttribute('aria-valuenow'));
+                return parseFloat(this.sliderDotDOM.getAttribute('aria-valuenow'));
 
             case 'select':
-                // TODO: 
-                break;
+                return this.selectDOM.selectedIndex;
+
+            case 'optionalSlider':
+                // TODO: type optionalSlider
+                // return break;
         }
     }
 
@@ -438,7 +452,11 @@ class Parameter {
                 break;
 
             case 'select':
-                // TODO: this.selectIncrement();
+                this.selectIncrement(cursor);
+                break;
+
+            case 'optionalSlider':
+                // TODO: type optionalSlider
                 break;
         }
     }
@@ -546,7 +564,7 @@ class Parameter {
 
     sliderIncrement(cursor = 'auto') {
         if (cursor === 'auto') {   
-            // console.log(`-> Parameter increment slider (auto) ${this.getCurrent()} + ${this.increment}`);
+            if (this.debug) console.log(`-> Parameter increment slider (auto) ${this.getCurrent()} + ${this.increment}`);
             const incrementalValue = this.getCurrent() + this.increment;
             if (incrementalValue <= this.max) {
                 this.sliderSetValue(incrementalValue);
@@ -554,7 +572,7 @@ class Parameter {
                 console.warn(`bad increment ${this.getCurrent()} + ${this.increment} for a max ${this.max} (${this.name})`);
             }
         } else {
-            // console.log(`-> Parameter increment slider (cursor ${cursor}) ${this.min} + (${this.increment} * ${cursor})`);
+            if (this.debug) console.log(`-> Parameter increment slider (cursor ${cursor}) ${this.min} + (${this.increment} * ${cursor})`);
             const incrementalValue = this.min + (this.increment * cursor);
             if (incrementalValue <= this.max) {
                 this.sliderSetValue(incrementalValue);
@@ -603,12 +621,12 @@ class Parameter {
         this.switchSetValue(false);
     }
 
-    switchSetValue(cursor = 'auto') {
+    switchSetValue(value = 'auto') {
         if (this.type !== 'switch') return false;
 
-        if (cursor === 'auto'
-            || (cursor && !this.switchDOM.classList.contains('toggled'))
-            || (!cursor && this.switchDOM.classList.contains('toggled'))) {
+        if (value === 'auto'
+            || (value && !this.switchDOM.classList.contains('toggled'))
+            || (!value && this.switchDOM.classList.contains('toggled'))) {
             this.switchDOM.click();
         }
     }
@@ -625,7 +643,69 @@ class Parameter {
 
     // SELECT
 
-    // TODO: ...
+    selectInit(options = {}) {
+        this.type = 'select';
+        this.selectDOM = this.parameterDOM.querySelector('select.option');
+        this.count = this.selectDOM.querySelectorAll('option').length;
+        this.options = {...this.optionsDefault, ...options};
+    }
+
+    selectReset() {
+        if (this.type !== 'select') return false;
+
+        this.selectSetValue(0);
+    }
+
+    selectSetValue(value) {
+        if (this.type !== 'select') return false;
+
+        // set value
+        this.selectDOM.selectedIndex = parseInt(value);
+
+        // event to refresh form vuejs
+        const evt = document.createEvent("HTMLEvents");
+        evt.initEvent("change", false, true);
+        this.selectDOM.dispatchEvent(evt);
+    }
+
+    selectDebug() {
+        console.log(
+            '--PARAMETER: ' + this.name + '\n' +
+            'type: ' + this.type + '\n' +
+            'current: ' + this.getCurrent() + '\n' +
+            'count: ' + this.count
+        );
+        console.log(this.selectDOM);
+    }
+
+    selectIncrement() {
+        const incrementalValue = this.getCurrent() + this.increment;
+        if (incrementalValue <= this.count) {
+            this.sliderSetValue(incrementalValue);
+        }
+    }
+
+    // OPTIONAL SLIDER
+
+    optionalSliderInit() {
+
+    }
+
+    optionalSliderReset() {
+
+    }
+
+    optionalSliderSetValue() {
+
+    }
+
+    optionalSliderDebug() {
+        
+    }
+
+    optionalSliderIncrement() {
+        
+    }
 }
 
 //const strategy = new Strategy(document.querySelector('.strategy'));
