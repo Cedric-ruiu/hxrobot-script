@@ -1275,6 +1275,7 @@ var Strategy = class {
     __publicField(this, "intervalTime", 500);
     __publicField(this, "jumpBacktests", 0);
     __publicField(this, "backtestNumber", 0);
+    __publicField(this, "debug", false);
     if (typeof strategy2 === "string") {
       this.strategy = document.getElementById(strategy2);
     } else if (typeof strategy2 === "number") {
@@ -1351,11 +1352,15 @@ var Strategy = class {
     this.backtestNumber = 0;
   }
   resetParameters() {
+    if (this.debug)
+      console.log("-> Strategy reset");
     this.parameters.forEach((parameter) => {
       parameter.reset();
     });
   }
   async validate() {
+    if (this.debug)
+      console.log("-> Strategy start validate");
     const validated = await new Promise((resolve) => {
       setTimeout(() => {
         if (this.strategy.querySelector(".overlay").style.display === "none") {
@@ -1373,6 +1378,8 @@ var Strategy = class {
     } else {
       return false;
     }
+    if (this.debug)
+      console.log("-> Strategy end validate");
     return true;
   }
   async validateWaiting(autoSave = true) {
@@ -1393,27 +1400,45 @@ var Strategy = class {
     });
   }
   async backtest(paramIndex = 0) {
+    if (this.debug)
+      console.log(`-> Strategy backtest [${paramIndex}]`);
     if (!this.parameters[paramIndex].options.ignore) {
+      if (this.debug)
+        console.log(`--> parameter[${paramIndex}] to work x${this.parameters[paramIndex].count}`);
       for (let i = 0; i < this.parameters[paramIndex].count; i++) {
+        if (this.debug)
+          console.log(`--> parameter[${paramIndex}] in for i = [${i}] set increment`);
         this.parameters[paramIndex].incrementValue(i);
         if (paramIndex + 1 < this.parameters.length) {
+          if (this.debug)
+            console.log(`--> parameter[${paramIndex}] go to parameter[${paramIndex + 1}]`);
           await this.backtest(paramIndex + 1);
         } else {
+          if (this.debug)
+            console.log(`--> parameter[${paramIndex}] validate`);
           if (!this.jumpBacktests || this.jumpBacktests < this.backtestNumber) {
             await this.validate();
           }
           this.backtestNumber++;
         }
       }
+      if (this.debug)
+        console.log(`--> parameter[${paramIndex}] reset`);
       this.parameters[paramIndex].reset();
     } else if (paramIndex + 1 < this.parameters.length) {
+      if (this.debug)
+        console.log(`--> parameter[${paramIndex}] ignored, go to parameter[${paramIndex + 1}]`);
       await this.backtest(paramIndex + 1);
     } else {
+      if (this.debug)
+        console.log(`--> parameter[${paramIndex}] ignored, that last, go validate`);
       if (!this.jumpBacktests || this.jumpBacktests < this.backtestNumber) {
         await this.validate();
       }
       this.backtestNumber++;
     }
+    if (this.debug)
+      console.log(`--> parameter[${paramIndex}] finished`);
     return true;
   }
   collectInfos() {
@@ -1458,11 +1483,15 @@ var Strategy = class {
     }
   }
   saveResults() {
+    if (this.debug)
+      console.log("-> Strategy save results");
     const additionalData = [];
     additionalData["date"] = new Date().toLocaleString();
     this.results.push({ ...additionalData, ...this.getPerfData(), ...this.getParamData() });
   }
   exportResults() {
+    if (this.debug)
+      console.log("-> Strategy export results");
     const fileDate = new Date().toISOString().slice(0, 10);
     const filename = `${fileDate}_${this.infos.currentIndicator}-${this.infos.currency}-${this.infos.timeframe}.csv`;
     const csv = Papa.unparse(this.results);
@@ -1540,10 +1569,14 @@ var Parameter = class {
     __publicField(this, "countMaxIncrement", 10);
     this.parameterDOM = elementDOM;
     this.name = this.parameterDOM.querySelector(".element-title").outerText;
-    if (this.parameterDOM.querySelector(".vue-js-switch")) {
+    if (this.parameterDOM.querySelector(".input-false")) {
+      this.optionalSliderInit(options);
+    } else if (this.parameterDOM.querySelector(".vue-js-switch")) {
       this.switchInit(options);
     } else if (this.parameterDOM.querySelector(".vue-slider")) {
       this.sliderInit(options);
+    } else if (this.parameterDOM.querySelector("select.option")) {
+      this.selectInit(options);
     } else {
       console.error("unknown parameter");
       console.error(this.parameterDOM);
@@ -1560,6 +1593,9 @@ var Parameter = class {
         this.sliderReset();
         break;
       case "select":
+        this.selectReset();
+        break;
+      case "optionalSlider":
         break;
     }
   }
@@ -1572,6 +1608,9 @@ var Parameter = class {
         this.sliderDebug();
         break;
       case "select":
+        this.selectDebug();
+        break;
+      case "optionalSlider":
         break;
     }
   }
@@ -1579,11 +1618,11 @@ var Parameter = class {
     switch (this.type) {
       case "switch":
         return this.switchDOM.classList.contains("toggled");
-        break;
       case "slider":
-        return parseInt(this.sliderDotDOM.getAttribute("aria-valuenow"));
+        return parseFloat(this.sliderDotDOM.getAttribute("aria-valuenow"));
       case "select":
-        break;
+        return this.selectDOM.selectedIndex;
+      case "optionalSlider":
     }
   }
   incrementValue(cursor) {
@@ -1597,6 +1636,9 @@ var Parameter = class {
         this.sliderIncrement(cursor);
         break;
       case "select":
+        this.selectIncrement(cursor);
+        break;
+      case "optionalSlider":
         break;
     }
   }
@@ -1680,6 +1722,8 @@ var Parameter = class {
   }
   sliderIncrement(cursor = "auto") {
     if (cursor === "auto") {
+      if (this.debug)
+        console.log(`-> Parameter increment slider (auto) ${this.getCurrent()} + ${this.increment}`);
       const incrementalValue = this.getCurrent() + this.increment;
       if (incrementalValue <= this.max) {
         this.sliderSetValue(incrementalValue);
@@ -1687,6 +1731,8 @@ var Parameter = class {
         console.warn(`bad increment ${this.getCurrent()} + ${this.increment} for a max ${this.max} (${this.name})`);
       }
     } else {
+      if (this.debug)
+        console.log(`-> Parameter increment slider (cursor ${cursor}) ${this.min} + (${this.increment} * ${cursor})`);
       const incrementalValue = this.min + this.increment * cursor;
       if (incrementalValue <= this.max) {
         this.sliderSetValue(incrementalValue);
@@ -1727,16 +1773,55 @@ var Parameter = class {
       return false;
     this.switchSetValue(false);
   }
-  switchSetValue(cursor = "auto") {
+  switchSetValue(value = "auto") {
     if (this.type !== "switch")
       return false;
-    if (cursor === "auto" || cursor && !this.switchDOM.classList.contains("toggled") || !cursor && this.switchDOM.classList.contains("toggled")) {
+    if (value === "auto" || value && !this.switchDOM.classList.contains("toggled") || !value && this.switchDOM.classList.contains("toggled")) {
       this.switchDOM.click();
     }
   }
   switchDebug() {
     console.log("--PARAMETER: " + this.name + "\ntype: " + this.type + "\ncurrent: " + this.getCurrent() + "\ncount: " + this.count);
     console.log(this.switchDOM);
+  }
+  selectInit(options = {}) {
+    this.type = "select";
+    this.selectDOM = this.parameterDOM.querySelector("select.option");
+    this.count = this.selectDOM.querySelectorAll("option").length;
+    this.options = { ...this.optionsDefault, ...options };
+  }
+  selectReset() {
+    if (this.type !== "select")
+      return false;
+    this.selectSetValue(0);
+  }
+  selectSetValue(value) {
+    if (this.type !== "select")
+      return false;
+    this.selectDOM.selectedIndex = parseInt(value);
+    const evt = document.createEvent("HTMLEvents");
+    evt.initEvent("change", false, true);
+    this.selectDOM.dispatchEvent(evt);
+  }
+  selectDebug() {
+    console.log("--PARAMETER: " + this.name + "\ntype: " + this.type + "\ncurrent: " + this.getCurrent() + "\ncount: " + this.count);
+    console.log(this.selectDOM);
+  }
+  selectIncrement() {
+    const incrementalValue = this.getCurrent() + this.increment;
+    if (incrementalValue <= this.count) {
+      this.sliderSetValue(incrementalValue);
+    }
+  }
+  optionalSliderInit() {
+  }
+  optionalSliderReset() {
+  }
+  optionalSliderSetValue() {
+  }
+  optionalSliderDebug() {
+  }
+  optionalSliderIncrement() {
   }
 };
 var strategy = new Strategy(0);
