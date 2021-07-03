@@ -73,3 +73,21 @@ strategy.start();
 |---------------|:------:|:------:|:---:|:---------:|:-----:|:------:|:-----:|:---------:|:----:|:---:|:---------:|:--------:|
 | **eth 15min** |        |    x   |     |           |       |        |  x    |           |  x   |     |           |          |
 |               |        |        |     |           |       |        |       |           |      |     |           |          |
+
+## Other
+
+```javascript
+// Test indicator with fully backtests
+strategy.init({
+    0: {min:false, max:false, increment:false},
+    1: {min:false, max:false, increment:false},
+    2: {min:false, max:false, increment:false},
+    3: {min:false, max:false, increment:false},
+    4: {min:false, max:false, increment:false},
+    5: {min:false, max:false, increment:false},
+    6: {min:false, max:false, increment:false},
+    7: {min:false, max:false, increment:false},
+    8: {min:false, max:false, increment:false},
+    9: {min:false, max:false, increment:false},
+})
+```
