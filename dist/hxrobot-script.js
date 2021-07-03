@@ -1326,6 +1326,9 @@ var Strategy = class {
     if (options.jumpBacktests) {
       this.jumpBacktests = options.jumpBacktests;
     }
+    if (options.debug) {
+      this.debug = options.debug;
+    }
     this.preCalculate();
   }
   async start() {
@@ -1567,6 +1570,7 @@ var Parameter = class {
       increment: "auto"
     });
     __publicField(this, "countMaxIncrement", 10);
+    __publicField(this, "incrementDecimals", 0);
     this.parameterDOM = elementDOM;
     this.name = this.parameterDOM.querySelector(".element-title").outerText;
     if (this.parameterDOM.querySelector(".input-false")) {
@@ -1699,6 +1703,7 @@ var Parameter = class {
         this.increment = this.options.increment;
       }
     }
+    this.incrementDecimals = this.countDecimals(this.increment);
     this.count = 0;
     for (let index = this.min; index <= this.max; index += this.increment) {
       this.count++;
@@ -1721,24 +1726,18 @@ var Parameter = class {
     console.log(this.sliderDOM);
   }
   sliderIncrement(cursor = "auto") {
+    let incrementalValue = 0;
     if (cursor === "auto") {
-      if (this.debug)
-        console.log(`-> Parameter increment slider (auto) ${this.getCurrent()} + ${this.increment}`);
-      const incrementalValue = this.getCurrent() + this.increment;
-      if (incrementalValue <= this.max) {
-        this.sliderSetValue(incrementalValue);
-      } else {
-        console.warn(`bad increment ${this.getCurrent()} + ${this.increment} for a max ${this.max} (${this.name})`);
-      }
+      incrementalValue = this.getCurrent() + this.increment;
     } else {
-      if (this.debug)
-        console.log(`-> Parameter increment slider (cursor ${cursor}) ${this.min} + (${this.increment} * ${cursor})`);
-      const incrementalValue = this.min + this.increment * cursor;
-      if (incrementalValue <= this.max) {
-        this.sliderSetValue(incrementalValue);
-      } else {
-        console.warn(`bad increment ${this.getCurrent()} + ${this.increment} for a max ${this.max} (${this.name})`);
-      }
+      incrementalValue = this.min + this.increment * cursor;
+    }
+    incrementalValue = incrementalValue.toFixed(this.incrementDecimals);
+    incrementalValue = parseFloat(incrementalValue);
+    if (incrementalValue <= this.max) {
+      this.sliderSetValue(incrementalValue);
+    } else {
+      console.warn(`bad increment ${this.getCurrent()} + ${this.increment} for a max ${this.max} (${this.name})`);
     }
   }
   switchInit(options = {}) {
@@ -1789,11 +1788,14 @@ var Parameter = class {
     this.selectDOM = this.parameterDOM.querySelector("select.option");
     this.count = this.selectDOM.querySelectorAll("option").length;
     this.options = { ...this.optionsDefault, ...options };
+    this.min = 0;
+    this.max = this.count;
+    this.increment = 1;
   }
   selectReset() {
     if (this.type !== "select")
       return false;
-    this.selectSetValue(0);
+    this.selectSetValue(this.min);
   }
   selectSetValue(value) {
     if (this.type !== "select")
@@ -1807,10 +1809,12 @@ var Parameter = class {
     console.log("--PARAMETER: " + this.name + "\ntype: " + this.type + "\ncurrent: " + this.getCurrent() + "\ncount: " + this.count);
     console.log(this.selectDOM);
   }
-  selectIncrement() {
-    const incrementalValue = this.getCurrent() + this.increment;
-    if (incrementalValue <= this.count) {
-      this.sliderSetValue(incrementalValue);
+  selectIncrement(cursor) {
+    const incrementalValue = this.min + this.increment * cursor;
+    if (incrementalValue <= this.max) {
+      this.selectSetValue(incrementalValue);
+    } else {
+      console.warn(`bad select increment ${this.getCurrent()} + ${this.increment} for a max ${this.max} (${this.name})`);
     }
   }
   optionalSliderInit() {
@@ -1822,6 +1826,11 @@ var Parameter = class {
   optionalSliderDebug() {
   }
   optionalSliderIncrement() {
+  }
+  countDecimals(value) {
+    if (Math.floor(value) === value)
+      return 0;
+    return value.toString().split(".")[1].length || 0;
   }
 };
 var strategy = new Strategy(0);

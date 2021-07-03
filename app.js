@@ -94,6 +94,10 @@ class Strategy {
             this.jumpBacktests = options.jumpBacktests;
         }
 
+        if (options.debug) {
+            this.debug = options.debug;
+        }
+
         this.preCalculate();
     }
 
@@ -361,6 +365,7 @@ class Parameter {
         increment: 'auto',
     };
     countMaxIncrement = 10;
+    incrementDecimals = 0; // only for slider
 
     constructor(elementDOM, options = {}) {
         this.parameterDOM = elementDOM;
@@ -530,6 +535,8 @@ class Parameter {
             }
         }
 
+        this.incrementDecimals = this.countDecimals(this.increment);
+
         this.count = 0;
         for (let index = this.min; index <= this.max; index+=this.increment) {
             this.count++;
@@ -563,22 +570,23 @@ class Parameter {
     }
 
     sliderIncrement(cursor = 'auto') {
+        let incrementalValue = 0;
         if (cursor === 'auto') {   
-            if (this.debug) console.log(`-> Parameter increment slider (auto) ${this.getCurrent()} + ${this.increment}`);
-            const incrementalValue = this.getCurrent() + this.increment;
-            if (incrementalValue <= this.max) {
-                this.sliderSetValue(incrementalValue);
-            } else {
-                console.warn(`bad increment ${this.getCurrent()} + ${this.increment} for a max ${this.max} (${this.name})`);
-            }
+            // if (this.debug) console.log(`-> Parameter increment slider (auto) ${this.getCurrent()} + ${this.increment}`);
+            incrementalValue = this.getCurrent() + this.increment;
         } else {
-            if (this.debug) console.log(`-> Parameter increment slider (cursor ${cursor}) ${this.min} + (${this.increment} * ${cursor})`);
-            const incrementalValue = this.min + (this.increment * cursor);
-            if (incrementalValue <= this.max) {
-                this.sliderSetValue(incrementalValue);
-            } else {
-                console.warn(`bad increment ${this.getCurrent()} + ${this.increment} for a max ${this.max} (${this.name})`);
-            }
+            // if (this.debug) console.log(`-> Parameter increment slider (cursor ${cursor}) ${this.min} + (${this.increment} * ${cursor})`);
+            incrementalValue = this.min + (this.increment * cursor);
+        }
+
+        // https://stackoverflow.com/questions/17369098/simplest-way-of-getting-the-number-of-decimals-in-a-number-in-javascript
+        incrementalValue = incrementalValue.toFixed(this.incrementDecimals);
+        incrementalValue = parseFloat(incrementalValue);
+
+        if (incrementalValue <= this.max) {
+            this.sliderSetValue(incrementalValue);
+        } else {
+            console.warn(`bad increment ${this.getCurrent()} + ${this.increment} for a max ${this.max} (${this.name})`);
         }
     }
 
@@ -648,12 +656,15 @@ class Parameter {
         this.selectDOM = this.parameterDOM.querySelector('select.option');
         this.count = this.selectDOM.querySelectorAll('option').length;
         this.options = {...this.optionsDefault, ...options};
+        this.min = 0;
+        this.max = this.count;
+        this.increment = 1;
     }
 
     selectReset() {
         if (this.type !== 'select') return false;
 
-        this.selectSetValue(0);
+        this.selectSetValue(this.min);
     }
 
     selectSetValue(value) {
@@ -678,14 +689,17 @@ class Parameter {
         console.log(this.selectDOM);
     }
 
-    selectIncrement() {
-        const incrementalValue = this.getCurrent() + this.increment;
-        if (incrementalValue <= this.count) {
-            this.sliderSetValue(incrementalValue);
+    selectIncrement(cursor) {
+        // if (this.debug) console.log(`-> Parameter increment select (cursor ${cursor}) ${this.min} + (${this.increment} * ${cursor})`);
+        const incrementalValue = this.min + (this.increment * cursor);
+        if (incrementalValue <= this.max) {
+            this.selectSetValue(incrementalValue);
+        } else {
+            console.warn(`bad select increment ${this.getCurrent()} + ${this.increment} for a max ${this.max} (${this.name})`);
         }
     }
 
-    // OPTIONAL SLIDER
+    // OPTIONAL SLIDER (SWITCH + SLIDER)
 
     optionalSliderInit() {
 
@@ -705,6 +719,13 @@ class Parameter {
 
     optionalSliderIncrement() {
         
+    }
+
+    // Utils
+
+    countDecimals(value) {
+        if(Math.floor(value) === value) return 0;
+        return value.toString().split(".")[1].length || 0; 
     }
 }
 
