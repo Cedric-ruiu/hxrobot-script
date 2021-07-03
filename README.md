@@ -52,17 +52,24 @@ strategy.start();
 
 ## Supported indicators
 
-| indicator | support | nb parameters |
-|-----------|---------|---------------|
-| Random | :heavy_check_mark: | 3 |
-| Payout | :heavy_check_mark: | 5 |
-| SAR | :heavy_check_mark: | 7 |
-| Orderflow | :heavy_check_mark: | 8 |
-| Delta div | :heavy_check_mark: | 7 |
-| Streak | :x: | 6 |
-| Stoch | :heavy_check_mark: | 6 |
-| Bollinger | :heavy_check_mark: | 5 |
-| MACD | :heavy_check_mark: | 5 |
-| RSI | :heavy_check_mark: | 6 |
-| Orderbook | :x: | 7 |
-| Autocorr | :heavy_check_mark: | 10 |
+| indicator | support | nb parameters | nb cursors | nb tests | nb days |
+|-----------|---------|---------------|------------|----------|---------|
+| Random | :heavy_check_mark: | 3 | 1202 | 10201000 | 1416 Days |
+| Payout | :heavy_check_mark: | 5 | 141 | 85600 | 12 Days |
+| SAR | :heavy_check_mark: | 7 | 338 | 705672000 | 98010 Days |
+| Orderflow | :heavy_check_mark: | 8 | :grey_question: | :grey_question: | :grey_question: |
+| Delta div | :heavy_check_mark: | 7 | :grey_question: | :grey_question: | :grey_question: |
+| Streak | :x: | 6 | :grey_question: | :grey_question: | :grey_question: |
+| Stoch | :heavy_check_mark: | 6 | 70 | 96000 | 13.3 Days |
+| Bollinger | :heavy_check_mark: | 5 | 90 | 36000 | 5 Days |
+| MACD | :heavy_check_mark: | 5 | 100 | 43200 | 6 Days |
+| RSI | :heavy_check_mark: | 6 | 1041 | 288708000 | 40098 Days |
+| Orderbook | :x: | 7 | :grey_question: | :grey_question: | :grey_question: |
+| Autocorr | :heavy_check_mark: | 10 | 1088 | 48192192000 | 6693360 Days |
+
+## Tested
+
+|               | Random | Payout | SAR | Orderflow | Delta | Streak | Stoch | Bollinger | MACD | RSI | Orderbook | Autocorr |
+|---------------|:------:|:------:|:---:|:---------:|:-----:|:------:|:-----:|:---------:|:----:|:---:|:---------:|:--------:|
+| **eth 15min** |        |    x   |     |           |       |        |  x    |           |  x   |     |           |          |
+|               |        |        |     |           |       |        |       |           |      |     |           |          |
