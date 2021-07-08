@@ -8,7 +8,7 @@ class Strategy {
     parameters = []; // array of Object Parameters
     results = []; // raw storage of backtests results
     infos = {}; // raw storage of strategy info
-    estimateTimeByTest = 12000; // duration estimation for one backtest (server side)
+    estimateTimeByTest = 13000; // duration estimation for one backtest (server side)
     overloadTime = 30000; // max timing allowed to waiting a backtest
     intervalTime = 500; // interval time to check when server respond a backtest
     jumpBacktests = 0; // start backtests after un specific number of tests
