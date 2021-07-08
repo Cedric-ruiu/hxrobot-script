@@ -133,6 +133,7 @@ class Strategy {
         }
         this.jumpBacktests = 0;
         this.backtestNumber = 0;
+        this.debug = false;
     }
 
     resetParameters() {
