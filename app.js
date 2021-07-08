@@ -539,7 +539,7 @@ class Parameter {
         this.incrementDecimals = this.countDecimals(this.increment);
 
         this.count = 0;
-        for (let index = this.min; index <= this.max; index+=this.increment) {
+        for (let index = this.min; index <= this.max; index = this.cleanFloat(index+this.increment)) {
             this.count++;
         }
     }
@@ -580,9 +580,7 @@ class Parameter {
             incrementalValue = this.min + (this.increment * cursor);
         }
 
-        // https://stackoverflow.com/questions/17369098/simplest-way-of-getting-the-number-of-decimals-in-a-number-in-javascript
-        incrementalValue = incrementalValue.toFixed(this.incrementDecimals);
-        incrementalValue = parseFloat(incrementalValue);
+        incrementalValue = this.cleanFloat(incrementalValue);
 
         if (incrementalValue <= this.max) {
             this.sliderSetValue(incrementalValue);
@@ -723,6 +721,12 @@ class Parameter {
     }
 
     // Utils
+
+    // https://stackoverflow.com/questions/17369098/simplest-way-of-getting-the-number-of-decimals-in-a-number-in-javascript
+    cleanFloat(floatNumber) {
+        floatNumber = floatNumber.toFixed(this.incrementDecimals);
+        return parseFloat(floatNumber);
+    }
 
     countDecimals(value) {
         if(Math.floor(value) === value) return 0;
