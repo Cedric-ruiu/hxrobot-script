@@ -80,7 +80,7 @@ strategy.start();
 
 |               | Random | Payout | SAR | Orderflow | Delta | Streak | Stoch | Bollinger | MACD | RSI | Orderbook | Autocorr |
 |---------------|:------:|:------:|:---:|:---------:|:-----:|:------:|:-----:|:---------:|:----:|:---:|:---------:|:--------:|
-| **eth 15min** |        |    x   |     |           |       |        |  x    |           |  x   |     |           |          |
+| **eth 15min** |        |    x   |     |     x     |   x   |        |  x    |     x     |  x   |     |           |          |
 |               |        |        |     |           |       |        |       |           |      |     |           |          |
 
 ## Other
