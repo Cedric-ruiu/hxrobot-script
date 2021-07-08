@@ -1270,12 +1270,14 @@ var Strategy = class {
     __publicField(this, "parameters", []);
     __publicField(this, "results", []);
     __publicField(this, "infos", {});
-    __publicField(this, "estimateTimeByTest", 12e3);
+    __publicField(this, "estimateTimeByTest", 13e3);
     __publicField(this, "overloadTime", 3e4);
     __publicField(this, "intervalTime", 500);
     __publicField(this, "jumpBacktests", 0);
     __publicField(this, "backtestNumber", 0);
     __publicField(this, "debug", false);
+    __publicField(this, "dateStart", 0);
+    __publicField(this, "dateEnd", 0);
     if (typeof strategy2 === "string") {
       this.strategy = document.getElementById(strategy2);
     } else if (typeof strategy2 === "number") {
@@ -1353,6 +1355,7 @@ var Strategy = class {
     };
     this.jumpBacktests = 0;
     this.backtestNumber = 0;
+    this.debug = false;
   }
   resetParameters() {
     if (this.debug)
@@ -1705,14 +1708,14 @@ var Parameter = class {
     }
     this.incrementDecimals = this.countDecimals(this.increment);
     this.count = 0;
-    for (let index = this.min; index <= this.max; index += this.increment) {
+    for (let index = this.min; index <= this.max; index = this.cleanFloat(index + this.increment)) {
       this.count++;
     }
   }
   sliderReset() {
     if (this.type !== "slider")
       return false;
-    if (this.min < this.getCurrent()) {
+    if (this.getCurrent() !== this.min) {
       this.sliderSetValue(this.min);
     }
   }
@@ -1732,8 +1735,7 @@ var Parameter = class {
     } else {
       incrementalValue = this.min + this.increment * cursor;
     }
-    incrementalValue = incrementalValue.toFixed(this.incrementDecimals);
-    incrementalValue = parseFloat(incrementalValue);
+    incrementalValue = this.cleanFloat(incrementalValue);
     if (incrementalValue <= this.max) {
       this.sliderSetValue(incrementalValue);
     } else {
@@ -1826,6 +1828,10 @@ var Parameter = class {
   optionalSliderDebug() {
   }
   optionalSliderIncrement() {
+  }
+  cleanFloat(floatNumber) {
+    floatNumber = floatNumber.toFixed(this.incrementDecimals);
+    return parseFloat(floatNumber);
   }
   countDecimals(value) {
     if (Math.floor(value) === value)
