@@ -547,7 +547,7 @@ class Parameter {
     sliderReset() {
         if(this.type !== 'slider') return false;
 
-        if(this.min < this.getCurrent()) {
+        if(this.getCurrent() !== this.min) {
             this.sliderSetValue(this.min);
         }
     }
