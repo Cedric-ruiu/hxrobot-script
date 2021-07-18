@@ -1264,6 +1264,7 @@ var require_papaparse = __commonJS({
 var Papa = require_papaparse();
 var Strategy = class {
   constructor(strategy2) {
+    __publicField(this, "label");
     __publicField(this, "strategy");
     __publicField(this, "indicators");
     __publicField(this, "indicator");
@@ -1275,6 +1276,7 @@ var Strategy = class {
     __publicField(this, "intervalTime", 500);
     __publicField(this, "jumpBacktests", 0);
     __publicField(this, "backtestNumber", 0);
+    __publicField(this, "backtestTotal", 0);
     __publicField(this, "debug", false);
     __publicField(this, "dateStart", 0);
     __publicField(this, "dateEnd", 0);
@@ -1286,6 +1288,7 @@ var Strategy = class {
       this.strategy = strategy2;
     }
     this.interfaceDecorator("available");
+    this.insertLabel();
     if (!this.strategy.querySelector(".indicators")) {
       console.error("indicators panel is closed. Opening it before...");
     }
@@ -1301,6 +1304,38 @@ var Strategy = class {
       default:
         break;
     }
+  }
+  insertLabel() {
+    this.strategy.style.position = "relative";
+    const label = document.createElement("div");
+    label.style.position = "absolute";
+    label.style.color = "#fff";
+    label.style.top = "30px";
+    label.style.left = "0";
+    label.style.backgroundColor = "rgba(20, 240, 20, 0.8)";
+    label.style.padding = "5px 10px";
+    label.style.zIndex = "5";
+    label.classList.add("cr-label");
+    this.strategy.appendChild(label);
+    this.label = document.querySelector(".cr-label");
+    this.setLabel("script loaded");
+  }
+  setLabel(content) {
+    this.label.innerHTML = content;
+  }
+  updateLabelProgress() {
+    let remainingTime = "";
+    let content = this.backtestNumber / this.backtestTotal * 100;
+    content = Number.parseFloat(content).toFixed(1);
+    content += "%";
+    if (this.backtestNumber === 0) {
+      remainingTime = new Date(new Date().getTime() + this.estimateTimeByTest * this.backtestTotal).toLocaleString();
+    } else {
+      const estimateTimeByTest = (new Date().getTime() - this.dateStart) / this.backtestNumber;
+      remainingTime = new Date(new Date().getTime() + estimateTimeByTest * (this.backtestTotal - this.backtestNumber)).toLocaleString();
+    }
+    content += ` (${remainingTime})`;
+    this.setLabel(content);
   }
   init(options = {}) {
     if (!this.strategy.querySelector(".indicators")) {
@@ -1334,13 +1369,17 @@ var Strategy = class {
     this.preCalculate();
   }
   async start() {
+    this.dateStart = new Date().getTime();
     this.interfaceDecorator("lock");
+    this.updateLabelProgress();
     this.resetParameters();
     if (!await this.validate())
       this.saveResults();
     await this.backtest();
     this.exportResults();
+    this.dateEnd = new Date().getTime();
     this.interfaceDecorator("available");
+    this.setLabel(`100% - start: ${new Date(this.dateStart).toLocaleString()} - end: ${new Date(this.dateEnd).toLocaleString()}`);
   }
   reset() {
     this.indicators = this.indicator = "";
@@ -1355,6 +1394,7 @@ var Strategy = class {
     };
     this.jumpBacktests = 0;
     this.backtestNumber = 0;
+    this.backtestTotal = 0;
     this.debug = false;
   }
   resetParameters() {
@@ -1382,10 +1422,12 @@ var Strategy = class {
     if (validated) {
       await this.validateWaiting();
     } else {
+      this.updateLabelProgress();
       return false;
     }
     if (this.debug)
       console.log("-> Strategy end validate");
+    this.updateLabelProgress();
     return true;
   }
   async validateWaiting(autoSave = true) {
@@ -1459,33 +1501,35 @@ var Strategy = class {
     };
   }
   preCalculate() {
-    let countTests = 1;
+    this.backtestTotal = 1;
     let countCursor = 0;
     this.parameters.forEach((parameter) => {
       if (!parameter.options.ignore) {
-        countTests *= parameter.count;
+        this.backtestTotal *= parameter.count;
         countCursor += parameter.count;
       }
     });
-    const totalTime = this.estimateTimeByTest * countTests;
+    const totalTime = this.estimateTimeByTest * this.backtestTotal;
     if (0 < this.jumpBacktests) {
-      const countRemainingTest = countTests - this.jumpBacktests;
+      const countRemainingTest = this.backtestTotal - this.jumpBacktests;
       const remainingTime = totalTime - this.jumpBacktests * this.estimateTimeByTest;
       console.log(`
                 --BACKTEST EVALUATION--
                 indicator: ${this.infos.currentIndicator} (${this.parameters.length} parameters with ${countCursor} cursors)
-                number of tests: ${countRemainingTest} (total: ${countTests} // jump to: ${this.jumpBacktests})
+                number of tests: ${countRemainingTest} (total: ${this.backtestTotal} // jump to: ${this.jumpBacktests})
                 estimate time to full backtest indicator: ${this.msToTime(remainingTime)} (total: ${this.msToTime(totalTime)})
                 estimate ending time: ${new Date(new Date().getTime() + remainingTime).toLocaleString()}
             `);
+      this.setLabel(`ready to start : ' + ${new Date(new Date().getTime() + remainingTime).toLocaleString()}`);
     } else {
       console.log(`
                 --BACKTEST EVALUATION--
                 indicator: ${this.infos.currentIndicator} (${this.parameters.length} parameters with ${countCursor} cursors)
-                number of tests: ${countTests}
+                number of tests: ${this.backtestTotal}
                 estimate time to full backtest indicator: ${this.msToTime(totalTime)}
                 estimate ending time: ${new Date(new Date().getTime() + totalTime).toLocaleString()}
             `);
+      this.setLabel(`ready to start : ${new Date(new Date().getTime() + totalTime).toLocaleString()}`);
     }
   }
   saveResults() {
