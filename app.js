@@ -64,7 +64,7 @@ class Strategy {
 
         this.strategy.appendChild(label);
 
-        this.label = document.querySelector('.cr-label');
+        this.label = this.strategy.querySelector('.cr-label');
         this.setLabel('script loaded');
     }
 
