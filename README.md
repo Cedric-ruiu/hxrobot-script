@@ -28,14 +28,14 @@ strategy.init({
     2: {increment: 2} // default to `'auto'`
     3: {min: false, max: false, increment: false}, // disable `'auto'` mode
     debug: true,
-    jumpBacktest: 2135,
+    jumpBacktests: 2135,
 });
 ```
 
 #### global options
 
 - `debug` - boolean - default: false
-- `jumpBacktest` - integer - default: 0
+- `jumpBacktests` - integer - default: 0
 
 #### parameter options
 
@@ -80,7 +80,7 @@ strategy.start();
 
 |               | Random | Payout | SAR | Orderflow | Delta | Streak | Stoch | Bollinger | MACD | RSI | Orderbook | Autocorr |
 |---------------|:------:|:------:|:---:|:---------:|:-----:|:------:|:-----:|:---------:|:----:|:---:|:---------:|:--------:|
-| **eth 15min** |        |    x   |     |     x     |   x   |        |  x    |     x     |  x   |     |           |          |
+| **eth 15min** |        |    x   |     |     x     |   x   |        |  x    |     x     |  x   |  x  |     x     |          |
 |               |        |        |     |           |       |        |       |           |      |     |           |          |
 
 ## Other
