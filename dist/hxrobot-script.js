@@ -1274,7 +1274,10 @@ var Strategy = class {
     __publicField(this, "estimateTimeByTest", 13e3);
     __publicField(this, "overloadTime", 3e4);
     __publicField(this, "intervalTime", 500);
-    __publicField(this, "jumpBacktests", 0);
+    __publicField(this, "jumpTestAfterStart", 0);
+    __publicField(this, "jumpTestStack", 0);
+    __publicField(this, "jumpTestZeroTrade", false);
+    __publicField(this, "jumpTestMinusEarning", false);
     __publicField(this, "backtestNumber", 0);
     __publicField(this, "backtestTotal", 0);
     __publicField(this, "debug", false);
@@ -1317,7 +1320,7 @@ var Strategy = class {
     label.style.zIndex = "5";
     label.classList.add("cr-label");
     this.strategy.appendChild(label);
-    this.label = document.querySelector(".cr-label");
+    this.label = this.strategy.querySelector(".cr-label");
     this.setLabel("script loaded");
   }
   setLabel(content) {
@@ -1360,8 +1363,14 @@ var Strategy = class {
         this.parameters.push(new Parameter(parametersDOM[i], parameterOptions));
       }
     }
-    if (options.jumpBacktests) {
-      this.jumpBacktests = options.jumpBacktests;
+    if (options.jumpTestAfterStart) {
+      this.jumpTestAfterStart = options.jumpTestAfterStart;
+    }
+    if (options.jumpTestZeroTrade) {
+      this.jumpTestZeroTrade = true;
+    }
+    if (options.jumpTestMinusEarning) {
+      this.jumpTestMinusEarning = true;
     }
     if (options.debug) {
       this.debug = options.debug;
@@ -1392,7 +1401,10 @@ var Strategy = class {
       currentIndicator: "",
       associateIndicator: []
     };
-    this.jumpBacktests = 0;
+    this.jumpTestAfterStart = 0;
+    this.jumpTestStack = 0;
+    this.jumpTestZeroTrade = 0;
+    this.jumpTestMinusEarning = 0;
     this.backtestNumber = 0;
     this.backtestTotal = 0;
     this.debug = false;
@@ -1464,8 +1476,13 @@ var Strategy = class {
         } else {
           if (this.debug)
             console.log(`--> parameter[${paramIndex}] validate`);
-          if (!this.jumpBacktests || this.jumpBacktests < this.backtestNumber) {
-            await this.validate();
+          if (!this.jumpTestAfterStart || this.jumpTestAfterStart < this.backtestNumber) {
+            if (!this.jumpTestStack) {
+              await this.validate();
+              this.checkJumpTest();
+            } else {
+              this.jumpTestStack--;
+            }
           }
           this.backtestNumber++;
         }
@@ -1480,14 +1497,59 @@ var Strategy = class {
     } else {
       if (this.debug)
         console.log(`--> parameter[${paramIndex}] ignored, that last, go validate`);
-      if (!this.jumpBacktests || this.jumpBacktests < this.backtestNumber) {
-        await this.validate();
+      if (!this.jumpTestAfterStart || this.jumpTestAfterStart < this.backtestNumber) {
+        if (!this.jumpTestStack) {
+          await this.validate();
+          this.checkJumpTest();
+        } else {
+          this.jumpTestStack--;
+        }
       }
       this.backtestNumber++;
     }
     if (this.debug)
       console.log(`--> parameter[${paramIndex}] finished`);
     return true;
+  }
+  isJumpableParameter() {
+    for (let i = this.parameters.length - 1; i >= 0; i--) {
+      if (this.parameters[i].type === "slider" && !this.parameters[i].options.ignore) {
+        if (this.parameters[i].getCurrent() + this.parameters[i].increment < this.parameters[i].max) {
+          return i;
+        } else {
+          return false;
+        }
+      }
+    }
+    return false;
+  }
+  checkJumpTest() {
+    if ((this.jumpTestZeroTrade || this.jumpTestMinusEarning) && 1 < this.results.length) {
+      const jumpableParameter = this.isJumpableParameter();
+      if (jumpableParameter) {
+        if (this.jumpTestZeroTrade) {
+          this.checkJumpTestZeroTrade(jumpableParameter);
+        } else if (this.jumpTestMinusEarning) {
+          this.checkJumpTestMinusEarning();
+        }
+      }
+    }
+  }
+  checkJumpTestZeroTrade(jumpableParameter) {
+    const current = this.results[this.results.length - 1];
+    if (current.trades === 0) {
+      for (let index = this.parameters[jumpableParameter].getCurrent(); index <= this.parameters[jumpableParameter].max; index = this.parameters[jumpableParameter].cleanFloat(index + this.parameters[jumpableParameter].increment)) {
+        this.jumpTestStack++;
+      }
+      this.jumpTestStack--;
+    }
+  }
+  checkJumpTestMinusEarning() {
+    const current = this.results[this.results.length - 1];
+    const previous = this.results[this.results.length - 2];
+    if (current.earning < 0 && current.earning < previous.earning) {
+      this.jumpTestStack++;
+    }
   }
   collectInfos() {
     const indics = [];
@@ -1510,13 +1572,13 @@ var Strategy = class {
       }
     });
     const totalTime = this.estimateTimeByTest * this.backtestTotal;
-    if (0 < this.jumpBacktests) {
-      const countRemainingTest = this.backtestTotal - this.jumpBacktests;
-      const remainingTime = totalTime - this.jumpBacktests * this.estimateTimeByTest;
+    if (0 < this.jumpTestAfterStart) {
+      const countRemainingTest = this.backtestTotal - this.jumpTestAfterStart;
+      const remainingTime = totalTime - this.jumpTestAfterStart * this.estimateTimeByTest;
       console.log(`
                 --BACKTEST EVALUATION--
                 indicator: ${this.infos.currentIndicator} (${this.parameters.length} parameters with ${countCursor} cursors)
-                number of tests: ${countRemainingTest} (total: ${this.backtestTotal} // jump to: ${this.jumpBacktests})
+                number of tests: ${countRemainingTest} (total: ${this.backtestTotal} // jump to: ${this.jumpTestAfterStart})
                 estimate time to full backtest indicator: ${this.msToTime(remainingTime)} (total: ${this.msToTime(totalTime)})
                 estimate ending time: ${new Date(new Date().getTime() + remainingTime).toLocaleString()}
             `);
