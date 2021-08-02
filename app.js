@@ -225,7 +225,7 @@ class Strategy {
         this.backtestNumber = 0;
         this.backtestTotal = 0;
         this.debug = false;
-        this.results = {};
+        this.results = [];
     }
 
     resetParameters() {
