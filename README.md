@@ -97,14 +97,14 @@ strategy.start();
 
 ## Supported options
 
-|               | slider | input + slider | switch | switch + slider | select |
-|:--------------|:------:|:--------------:|:------:|:---------------:|:------:|
-| ignore        |:heavy_check_mark:|:heavy_check_mark:|:heavy_check_mark:|:x:|:heavy_check_mark:|
-| increment     |:heavy_check_mark:|:heavy_check_mark:|:x:|:x:|:x:|
-| min           |:heavy_check_mark:|:heavy_check_mark:|:x:|:x:|:x:|
-| max           |:heavy_check_mark:|:heavy_check_mark:|:x:|:x:|:x:|
-| zeroJumpEnd   |:heavy_check_mark:|:heavy_check_mark:|:x:|:x:|:x:|
-| minusJumpNext |:heavy_check_mark:|:heavy_check_mark:|:x:|:x:|:x:|
+|                      | slider | input + slider | switch | switch + slider | select |
+|:---------------------|:------:|:--------------:|:------:|:---------------:|:------:|
+| ignore               |:heavy_check_mark:|:heavy_check_mark:|:heavy_check_mark:|:x:|:heavy_check_mark:|
+| increment            |:heavy_check_mark:|:heavy_check_mark:|:x:|:x:|:x:|
+| min                  |:heavy_check_mark:|:heavy_check_mark:|:x:|:x:|:x:|
+| max                  |:heavy_check_mark:|:heavy_check_mark:|:x:|:x:|:x:|
+| jumpTestZeroTrade    |:heavy_check_mark:|:heavy_check_mark:|:x:|:x:|:x:|
+| jumpTestMinusEarning |:heavy_check_mark:|:heavy_check_mark:|:x:|:x:|:x:|
 
 ## Already tested
 
