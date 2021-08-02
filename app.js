@@ -163,8 +163,7 @@ class Strategy {
         this.dateStart = new Date().getTime();
 
         // UI update start
-        this.interfaceDecorator('lock');
-        this.updateLabelProgress();
+        this.startInfo();
 
         // reset all parameters and force saveResults
         // avoid case of ignored first test because nothing to validate
@@ -174,16 +173,39 @@ class Strategy {
         // start all backtests, first will be ignored
         await this.backtest()
 
-        // start process to export data
-        this.exportResults();
-
         // Track time
         this.dateEnd = new Date().getTime();
 
         // UI update end
-        this.interfaceDecorator('available');
-        this.setLabel(`100% - start: ${new Date(this.dateStart).toLocaleString()} - end: ${new Date(this.dateEnd).toLocaleString()}`);
+        this.endInfo();
+
+        // start process to export data
+        this.exportResults();
     };
+
+    startInfo() {
+        this.interfaceDecorator('lock');
+        this.setLabel(`100% - starting...`);
+
+        console.log(`
+            --BACKTEST STARTED--
+            start time: ${new Date(this.dateStart).toLocaleString()}
+            end time (estimate): ${new Date(new Date().getTime() + (this.estimateTimeByTest * this.backtestTotal)).toLocaleString()}
+        `);
+    }
+
+    endInfo() {
+        this.interfaceDecorator('available');
+        this.setLabel(`100% - finish`);
+
+        console.log(`
+            --BACKTEST END--
+            start time: ${new Date(this.dateStart).toLocaleString()}
+            end time: ${new Date(this.dateEnd).toLocaleString()}
+            tests: ${this.results.length - 1}
+            jumped tests: ${this.backtestTotal - (this.results.length - 1)}
+        `);
+    }
 
     reset() {
         this.indicators = this.indicator = '';
@@ -203,6 +225,7 @@ class Strategy {
         this.backtestNumber = 0;
         this.backtestTotal = 0;
         this.debug = false;
+        this.results = {};
     }
 
     resetParameters() {
@@ -396,29 +419,38 @@ class Strategy {
 
         const totalTime = this.estimateTimeByTest * this.backtestTotal;
 
+        let evalIndicator,
+            evalCountTest,
+            evalEstimateDuringTime,
+            evalEstimateEndingTime;
+
         if (0 < this.jumpTestAfterStart) {
             const countRemainingTest = this.backtestTotal - this.jumpTestAfterStart;
-            const remainingTime = totalTime - (this.jumpTestAfterStart * this.estimateTimeByTest)
-            console.log(`
-                --BACKTEST EVALUATION--
-                indicator: ${this.infos.currentIndicator} (${this.parameters.length} parameters with ${countCursor} cursors)
-                number of tests: ${countRemainingTest} (total: ${this.backtestTotal} // jump to: ${this.jumpTestAfterStart})
-                estimate time to full backtest indicator: ${this.msToTime(remainingTime)} (total: ${this.msToTime(totalTime)})
-                estimate ending time: ${new Date(new Date().getTime() + remainingTime).toLocaleString()}
-            `);
-
-            this.setLabel(`ready to start : ' + ${new Date(new Date().getTime() + remainingTime).toLocaleString()}`);
+            const remainingTime = totalTime - (this.jumpTestAfterStart * this.estimateTimeByTest);
+            evalIndicator = `${this.infos.currentIndicator} (${this.parameters.length} parameters with ${countCursor} cursors)`;
+            evalCountTest = `${countRemainingTest} (total: ${this.backtestTotal} // jump to: ${this.jumpTestAfterStart})`;
+            evalEstimateDuringTime = `${this.msToTime(remainingTime)} (total: ${this.msToTime(totalTime)})`;
+            evalEstimateEndingTime = `${new Date(new Date().getTime() + remainingTime).toLocaleString()}`;
         } else {
-            console.log(`
-                --BACKTEST EVALUATION--
-                indicator: ${this.infos.currentIndicator} (${this.parameters.length} parameters with ${countCursor} cursors)
-                number of tests: ${this.backtestTotal}
-                estimate time to full backtest indicator: ${this.msToTime(totalTime)}
-                estimate ending time: ${new Date(new Date().getTime() + totalTime).toLocaleString()}
-            `);
-
-            this.setLabel(`ready to start : ${new Date(new Date().getTime() + totalTime).toLocaleString()}`);
+            evalIndicator = `${this.infos.currentIndicator} (${this.parameters.length} parameters with ${countCursor} cursors)`;
+            evalCountTest = `${this.backtestTotal}`;
+            evalEstimateDuringTime = `${this.msToTime(totalTime)}`;
+            evalEstimateEndingTime = `${new Date(new Date().getTime() + totalTime).toLocaleString()}`;
         }
+
+        this.setLabel(`ready to start : ${evalEstimateEndingTime}`);
+
+        console.log(`
+            --BACKTEST EVALUATION--
+            indicator: ${evalIndicator}
+            number of tests: ${evalCountTest}
+            estimate time to full backtest indicator: ${evalEstimateDuringTime}
+            estimate ending time: ${evalEstimateEndingTime}
+            (option) debug: ${this.debug}
+            (option) jumpTestAfterStart: ${this.jumpTestAfterStart}
+            (option) jumpTestZeroTrade: ${this.jumpTestZeroTrade}
+            (option) jumpTestMinusEarning: ${this.jumpTestMinusEarning}
+        `);
     }
 
     saveResults() {
