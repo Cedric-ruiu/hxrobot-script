@@ -202,8 +202,8 @@ class Strategy {
             --BACKTEST END--
             start time: ${new Date(this.dateStart).toLocaleString()}
             end time: ${new Date(this.dateEnd).toLocaleString()}
-            tests: ${this.results.length - 1}
-            jumped tests: ${this.backtestTotal - (this.results.length - 1)}
+            tests: ${this.results.length}
+            jumped tests: ${this.backtestTotal - (this.results.length)}
         `);
     }
 
