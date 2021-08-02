@@ -75,11 +75,13 @@ class Strategy {
     }
 
     updateLabelProgress() {
-        let remainingTime = '';
+        // show %
         let content = (this.backtestNumber / this.backtestTotal) * 100;
         content = Number.parseFloat(content).toFixed(1);
         content += '%';
-
+        
+        // show remaining time
+        let remainingTime = '';
         if(this.backtestNumber === 0) {
             remainingTime = new Date(new Date().getTime() + (this.estimateTimeByTest * this.backtestTotal)).toLocaleString();
         } else {
@@ -196,8 +198,8 @@ class Strategy {
         }
         this.jumpTestAfterStart = 0;
         this.jumpTestStack = 0;
-        this.jumpTestZeroTrade = 0;
-        this.jumpTestMinusEarning = 0;
+        this.jumpTestZeroTrade = false;
+        this.jumpTestMinusEarning = false;
         this.backtestNumber = 0;
         this.backtestTotal = 0;
         this.debug = false;
@@ -832,7 +834,6 @@ class Parameter {
     }
 
     selectIncrement(cursor) {
-        // if (this.debug) console.log(`-> Parameter increment select (cursor ${cursor}) ${this.min} + (${this.increment} * ${cursor})`);
         const incrementalValue = this.min + (this.increment * cursor);
         if (incrementalValue <= this.max) {
             this.selectSetValue(incrementalValue);
