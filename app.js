@@ -793,17 +793,4 @@ class Parameter {
     }
 }
 
-//const strategy = new Strategy(document.querySelector('.strategy'));
 let strategy = new Strategy(0);
-
-// strategy.init({
-//     0: {ignore: true},
-//     1: {ignore: true},
-//     2: {ignore: true},
-//     3: {increment: 1, min: 2, max: 3},
-//     4: {increment: 1, min: 2, max: 3},
-//     5: {ignore: true},
-//     jumpBacktests: 1255,
-// })
-
-// strategy.start();
