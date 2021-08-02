@@ -10,6 +10,6 @@
       "papaparse": "^5.3.1"
    },
    "scripts": {
-    "build": "esbuild app.js --bundle --format=esm --target=es2020  --platform=node --outfile=dist/hxrobot-script.js"
+    "build": "esbuild app.js --bundle --format=esm --target=es2020 --minify-whitespace --minify-syntax --outfile=dist/hxrobot-script.js"
   }
 }
