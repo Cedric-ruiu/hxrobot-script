@@ -28,7 +28,9 @@ strategy.init({
     2: {increment: 2} // default to `'auto'`
     3: {min: false, max: false, increment: false}, // disable `'auto'` mode
     debug: true,
-    jumpBacktests: 2135,
+    jumpTestAfterStart: 2135,
+    jumpTestZeroTrade: true,
+    jumpTestMinusEarning: true,
 });
 ```
 

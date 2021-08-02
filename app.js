@@ -11,7 +11,10 @@ class Strategy {
     estimateTimeByTest = 13000; // duration estimation for one backtest (server side)
     overloadTime = 30000; // max timing allowed to waiting a backtest
     intervalTime = 500; // interval time to check when server respond a backtest
-    jumpBacktests = 0; // start backtests after un specific number of tests
+    jumpTestAfterStart = 0; // start backtests after un specific number of tests
+    jumpTestStack = 0; // current stacking jump test
+    jumpTestZeroTrade = false; // jump all following cursor test for last slider indic if trade === 0
+    jumpTestMinusEarning = false; // jump one following cursor test for last slider indic if earning smaller than previous
     backtestNumber = 0; // number of processed backtests (with jumped)
     backtestTotal = 0; // total of backtests
     debug = false;
@@ -134,8 +137,16 @@ class Strategy {
             }
         }
 
-        if (options.jumpBacktests) {
-            this.jumpBacktests = options.jumpBacktests;
+        if (options.jumpTestAfterStart) {
+            this.jumpTestAfterStart = options.jumpTestAfterStart;
+        }
+
+        if (options.jumpTestZeroTrade) {
+            this.jumpTestZeroTrade = true;
+        }
+
+        if (options.jumpTestMinusEarning) {
+            this.jumpTestMinusEarning = true;
         }
 
         if (options.debug) {
@@ -183,7 +194,10 @@ class Strategy {
             currentIndicator: '',
             associateIndicator: [],
         }
-        this.jumpBacktests = 0;
+        this.jumpTestAfterStart = 0;
+        this.jumpTestStack = 0;
+        this.jumpTestZeroTrade = 0;
+        this.jumpTestMinusEarning = 0;
         this.backtestNumber = 0;
         this.backtestTotal = 0;
         this.debug = false;
@@ -259,8 +273,13 @@ class Strategy {
                     await this.backtest(paramIndex + 1);
                 } else {
                     if (this.debug) console.log(`--> parameter[${paramIndex}] validate`);
-                    if (!this.jumpBacktests || this.jumpBacktests < this.backtestNumber) {
-                        await this.validate();
+                    if (!this.jumpTestAfterStart || this.jumpTestAfterStart < this.backtestNumber) {
+                        if (!this.jumpTestStack) {
+                            await this.validate();
+                            this.checkJumpTest();
+                        } else {
+                            this.jumpTestStack--;
+                        }
                     }
                     this.backtestNumber++;
                 }
@@ -273,8 +292,13 @@ class Strategy {
             await this.backtest(paramIndex + 1);
         } else {
             if (this.debug) console.log(`--> parameter[${paramIndex}] ignored, that last, go validate`);
-            if (!this.jumpBacktests || this.jumpBacktests < this.backtestNumber) {
-                await this.validate();
+            if (!this.jumpTestAfterStart || this.jumpTestAfterStart < this.backtestNumber) {
+                if (!this.jumpTestStack) {
+                    await this.validate();
+                    this.checkJumpTest();
+                } else {
+                    this.jumpTestStack--;
+                }
             }
             this.backtestNumber++;
         }
@@ -284,6 +308,66 @@ class Strategy {
     }
 
     // MANAGE STATS
+
+    isJumpableParameter() {
+        for (let i = this.parameters.length - 1; i >= 0; i--) {
+            if (this.parameters[i].type === 'slider' && !this.parameters[i].options.ignore)  {
+                // search the last slider parameter not ignored
+                if ((this.parameters[i].getCurrent() + this.parameters[i].increment) < this.parameters[i].max)  {
+                    // not the last cursor in this parameter, jump value is possible
+                    return i;
+                } else {
+                    // we are on the last cursor, no jump
+                    return false;
+                }
+            }
+        }
+
+        // slider not found, no jump
+        return false;
+    }
+
+    checkJumpTest() {
+        if (
+            (this.jumpTestZeroTrade || this.jumpTestMinusEarning) // options enabled
+            && 1 < this.results.length // enough data to compare
+        ) {
+            const jumpableParameter = this.isJumpableParameter();
+
+            if (jumpableParameter) {
+                if (this.jumpTestZeroTrade) {
+                    this.checkJumpTestZeroTrade(jumpableParameter);
+                } else if (this.jumpTestMinusEarning) {
+                    this.checkJumpTestMinusEarning();
+                }
+            }
+        }
+    }
+
+    checkJumpTestZeroTrade(jumpableParameter) {
+        const current = this.results[this.results.length - 1];
+
+        if (current.trades === 0) {
+            // determine the number of cursor to jump
+            for (
+                let index = this.parameters[jumpableParameter].getCurrent();
+                index <= this.parameters[jumpableParameter].max;
+                index = this.parameters[jumpableParameter].cleanFloat(index + this.parameters[jumpableParameter].increment)
+            ) {
+                this.jumpTestStack++;
+            }
+            this.jumpTestStack--; // remove the getCurrent test, because already tested
+        }
+    }
+
+    checkJumpTestMinusEarning() {
+        const current = this.results[this.results.length - 1];
+        const previous = this.results[this.results.length - 2];
+
+        if (current.earning < 0 && current.earning < previous.earning) {
+            this.jumpTestStack++;
+        }
+    }
 
     collectInfos() {
         const indics = [];
@@ -310,13 +394,13 @@ class Strategy {
 
         const totalTime = this.estimateTimeByTest * this.backtestTotal;
 
-        if (0 < this.jumpBacktests) {
-            const countRemainingTest = this.backtestTotal - this.jumpBacktests;
-            const remainingTime = totalTime - (this.jumpBacktests * this.estimateTimeByTest)
+        if (0 < this.jumpTestAfterStart) {
+            const countRemainingTest = this.backtestTotal - this.jumpTestAfterStart;
+            const remainingTime = totalTime - (this.jumpTestAfterStart * this.estimateTimeByTest)
             console.log(`
                 --BACKTEST EVALUATION--
                 indicator: ${this.infos.currentIndicator} (${this.parameters.length} parameters with ${countCursor} cursors)
-                number of tests: ${countRemainingTest} (total: ${this.backtestTotal} // jump to: ${this.jumpBacktests})
+                number of tests: ${countRemainingTest} (total: ${this.backtestTotal} // jump to: ${this.jumpTestAfterStart})
                 estimate time to full backtest indicator: ${this.msToTime(remainingTime)} (total: ${this.msToTime(totalTime)})
                 estimate ending time: ${new Date(new Date().getTime() + remainingTime).toLocaleString()}
             `);
