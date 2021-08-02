@@ -1,4 +1,3 @@
-// import {Papa} from 'papaparse';
 let Papa = require('papaparse');
 
 class Strategy {
@@ -599,7 +598,7 @@ class Parameter {
         this.incrementDecimals = this.countDecimals(this.increment);
 
         this.count = 0;
-        for (let index = this.min; index <= this.max; index = this.cleanFloat(index+this.increment)) {
+        for (let index = this.min; index <= this.max; index = this.cleanFloat(index + this.increment)) {
             this.count++;
         }
     }
