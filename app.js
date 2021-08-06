@@ -185,7 +185,7 @@ class Strategy {
 
     startInfo() {
         this.interfaceDecorator('lock');
-        this.setLabel(`100% - starting...`);
+        this.setLabel(`0% - starting...`);
 
         console.log(`
             --BACKTEST STARTED--
