@@ -310,8 +310,10 @@ class Strategy {
                 }
             }
     
-            if (this.debug) console.log(`--> parameter[${paramIndex}] reset`);
-            this.parameters[paramIndex].reset();
+            if (this.backtestNumber < this.backtestTotal) {
+                if (this.debug) console.log(`--> parameter[${paramIndex}] reset`);
+                this.parameters[paramIndex].reset();
+            }
         } else if (paramIndex + 1 < this.parameters.length) {
             if (this.debug) console.log(`--> parameter[${paramIndex}] ignored, go to parameter[${paramIndex + 1}]`);
             await this.backtest(paramIndex + 1);
