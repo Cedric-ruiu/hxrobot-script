@@ -293,32 +293,28 @@ class Strategy {
                 if (this.debug) console.log(`--> parameter[${paramIndex}] in for i = [${i}] set increment`);
                 this.parameters[paramIndex].incrementValue(i);
 
-                if (paramIndex + 1 < this.parameters.length) {
-                    if (this.debug) console.log(`--> parameter[${paramIndex}] go to parameter[${paramIndex + 1}]`);
-                    await this.backtest(paramIndex + 1);
-                } else {
-                    if (this.debug) console.log(`--> parameter[${paramIndex}] validate`);
-                    if (!this.jumpTestAfterStart || this.jumpTestAfterStart < this.backtestNumber) {
-                        if (!this.jumpTestStack) {
-                            await this.validate();
-                            this.checkJumpTest();
-                        } else {
-                            this.jumpTestStack--;
-                        }
-                    }
-                    this.backtestNumber++;
-                }
+                await this.backtestParam(paramIndex);
             }
     
             if (this.backtestNumber < this.backtestTotal) {
                 if (this.debug) console.log(`--> parameter[${paramIndex}] reset`);
                 this.parameters[paramIndex].reset();
             }
-        } else if (paramIndex + 1 < this.parameters.length) {
-            if (this.debug) console.log(`--> parameter[${paramIndex}] ignored, go to parameter[${paramIndex + 1}]`);
+        } else {
+            if (this.debug) console.log(`--> parameter[${paramIndex}] ignored`);
+            await this.backtestParam(paramIndex);
+        }
+        
+        if (this.debug) console.log(`--> parameter[${paramIndex}] finished`);
+        return true;
+    }
+
+    async backtestParam(paramIndex = 0) {
+        if (paramIndex + 1 < this.parameters.length) {
+            if (this.debug) console.log(`--> parameter[${paramIndex}] go to parameter[${paramIndex + 1}]`);
             await this.backtest(paramIndex + 1);
         } else {
-            if (this.debug) console.log(`--> parameter[${paramIndex}] ignored, that last, go validate`);
+            if (this.debug) console.log(`--> parameter[${paramIndex}] validate`);
             if (!this.jumpTestAfterStart || this.jumpTestAfterStart < this.backtestNumber) {
                 if (!this.jumpTestStack) {
                     await this.validate();
@@ -329,8 +325,7 @@ class Strategy {
             }
             this.backtestNumber++;
         }
-        
-        if (this.debug) console.log(`--> parameter[${paramIndex}] finished`);
+
         return true;
     }
 
