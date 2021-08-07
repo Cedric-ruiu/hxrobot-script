@@ -55,21 +55,26 @@ class Strategy {
     }
 
     insertLabel() {
-        this.strategy.style.position = 'relative';
-
-        const label = document.createElement("div");
-        label.style.position = 'absolute';
-        label.style.color = '#fff';
-        label.style.top = '30px';
-        label.style.left = '0';
-        label.style.backgroundColor = 'rgba(20, 240, 20, 0.8)';
-        label.style.padding = '5px 10px';
-        label.style.zIndex = '5';
-        label.classList.add('cr-label');
-
-        this.strategy.appendChild(label);
-
         this.label = this.strategy.querySelector('.cr-label');
+
+        if (!this.label) {
+            this.strategy.style.position = 'relative';
+
+            const label = document.createElement("div");
+            label.style.position = 'absolute';
+            label.style.color = '#fff';
+            label.style.top = '30px';
+            label.style.left = '0';
+            label.style.backgroundColor = 'rgba(20, 240, 20, 0.8)';
+            label.style.padding = '5px 10px';
+            label.style.zIndex = '5';
+            label.classList.add('cr-label');
+
+            this.strategy.appendChild(label);
+
+            this.label = this.strategy.querySelector('.cr-label');
+        }
+
         this.setLabel('script loaded');
     }
 
