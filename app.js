@@ -13,8 +13,11 @@ class Strategy {
     intervalTime = 500; // interval time to check when server respond a backtest
     jumpTestAfterStart = 0; // start backtests after un specific number of tests
     jumpTestStack = 0; // current stacking jump test
-    jumpTestZeroTrade = false; // jump all following cursor test for last slider indic if trade === 0
-    jumpTestMinusEarning = false; // jump one following cursor test for last slider indic if earning smaller than previous
+    jumpTestsParamByTrade = false; // jump all following cursor test for last slider indic if trade === value
+    jumpTestsParamByEarning = false; // jump all following cursor test for last slider indic if earning smaller than value
+    jumpTestByEarning = false; // jump one following cursor test for last slider indic if earning smaller than previous
+    jumpTestByTrade = false; // jump one following cursor test for last slider indic if earning smaller than previous
+    jumpTestByEarningMinus = false; // jump one following cursor test for last slider indic if earning smaller than previous
     backtestNumber = 0; // number of processed backtests (with jumped)
     backtestTotal = 0; // total of backtests
     debug = false;
@@ -141,14 +144,27 @@ class Strategy {
 
         if (options.jumpTestAfterStart) {
             this.jumpTestAfterStart = options.jumpTestAfterStart;
+            this.jumpTestStack += this.jumpTestAfterStart;
         }
 
-        if (options.jumpTestZeroTrade) {
-            this.jumpTestZeroTrade = true;
+        if (typeof options.jumpTestsParamByTrade !== 'undefined') {
+            this.jumpTestsParamByTrade = options.jumpTestsParamByTrade;
         }
 
-        if (options.jumpTestMinusEarning) {
-            this.jumpTestMinusEarning = true;
+        if (typeof options.jumpTestsParamByEarning !== 'undefined') {
+            this.jumpTestsParamByEarning = options.jumpTestsParamByEarning;
+        }
+
+        if (typeof options.jumpTestByEarning !== 'undefined') {
+            this.jumpTestByEarning = options.jumpTestByEarning;
+        }
+
+        if (typeof options.jumpTestByTrade !== 'undefined') {
+            this.jumpTestByTrade = options.jumpTestByTrade;
+        }
+
+        if (typeof options.jumpTestByEarningMinus !== 'undefined') {
+            this.jumpTestByEarningMinus = options.jumpTestByEarningMinus;
         }
 
         if (options.debug) {
@@ -220,8 +236,11 @@ class Strategy {
         }
         this.jumpTestAfterStart = 0;
         this.jumpTestStack = 0;
-        this.jumpTestZeroTrade = false;
-        this.jumpTestMinusEarning = false;
+        this.jumpTestsParamByTrade = false;
+        this.jumpTestsParamByEarning = false;
+        this.jumpTestByEarning = false;
+        this.jumpTestByTrade = false;
+        this.jumpTestByEarningMinus = false;
         this.backtestNumber = 0;
         this.backtestTotal = 0;
         this.debug = false;
@@ -315,81 +334,146 @@ class Strategy {
             await this.backtest(paramIndex + 1);
         } else {
             if (this.debug) console.log(`--> parameter[${paramIndex}] validate`);
-            if (!this.jumpTestAfterStart || this.jumpTestAfterStart < this.backtestNumber) {
-                if (!this.jumpTestStack) {
-                    await this.validate();
-                    this.checkJumpTest();
-                } else {
-                    this.jumpTestStack--;
-                }
+            
+            if (!this.jumpTestStack) {
+                await this.validate();
+                this.checkJumpTest();
+            } else {
+                this.jumpTestStack--;
             }
+            
             this.backtestNumber++;
         }
 
         return true;
     }
 
-    // MANAGE STATS
+    // JUMP
 
     isJumpableParameter() {
         for (let i = this.parameters.length - 1; i >= 0; i--) {
-            if (this.parameters[i].type === 'slider' && !this.parameters[i].options.ignore)  {
-                // search the last slider parameter not ignored
-                if ((this.parameters[i].getCurrent() + this.parameters[i].increment) < this.parameters[i].max)  {
-                    // not the last cursor in this parameter, jump value is possible
-                    return i;
+            if (!this.parameters[i].options.ignore)  {
+                if (this.parameters[i].type === 'slider') {
+                    // search the last slider parameter not ignored
+                    if ((this.parameters[i].getCurrent() + this.parameters[i].increment) <= this.parameters[i].max)  {
+                        // not the last cursor in this parameter, jump value is possible
+                        return i;
+                    } else {
+                        // we are on the last cursor, no jump
+                        return false;
+                    }
                 } else {
-                    // we are on the last cursor, no jump
+                    // last active parameter isn't a slider
                     return false;
                 }
             }
         }
 
-        // slider not found, no jump
+        // active slider not found, no jump
         return false;
     }
 
     checkJumpTest() {
-        if (
-            (this.jumpTestZeroTrade || this.jumpTestMinusEarning) // options enabled
-            && 1 < this.results.length // enough data to compare
-        ) {
+        // enough data to compare
+        if (1 < this.results.length) {
             const jumpableParameter = this.isJumpableParameter();
 
             if (jumpableParameter) {
-                if (this.jumpTestZeroTrade) {
-                    this.checkJumpTestZeroTrade(jumpableParameter);
-                } else if (this.jumpTestMinusEarning) {
-                    this.checkJumpTestMinusEarning();
+                const current = this.getCurrentResult();
+                let jumped = false;
+
+                // Priority 0
+                if (this.jumpTestsParamByTrade !== false) {
+                    jumped = this.checkJumpTestsParamByTrade(jumpableParameter, current);
+                }
+
+                // Priority 1
+                if (!jumped && this.jumpTestsParamByEarning !== false) {
+                    jumped = this.checkJumpTestsParamByEarning(jumpableParameter, current);
+                }
+
+                // Priority 2
+                if (!jumped && this.jumpTestByEarning !== false) {
+                    jumped = this.checkJumpTestByEarning(current);
+                }
+
+                // Priority 3
+                if (!jumped && this.jumpTestByTrade !== false) {
+                    jumped = this.checkJumpTestByTrade(current);
+                }
+
+                // Priority 4
+                if (!jumped && this.jumpTestByEarningMinus !== false) {
+                    const previous = this.getPreviousResult();
+                    jumped = this.checkJumpTestByEarningMinus(current, previous);
                 }
             }
         }
     }
 
-    checkJumpTestZeroTrade(jumpableParameter) {
-        const current = this.results[this.results.length - 1];
+    checkJumpTestsParamByTrade(jumpableParameter, current) {
+        if (current.trades <= this.jumpTestsParamByTrade) {
+            return this.jumpTestsParam(jumpableParameter);
+        }
 
-        if (current.trades === 0) {
-            // determine the number of cursor to jump
-            for (
-                let index = this.parameters[jumpableParameter].getCurrent();
-                index <= this.parameters[jumpableParameter].max;
-                index = this.parameters[jumpableParameter].cleanFloat(index + this.parameters[jumpableParameter].increment)
-            ) {
-                this.jumpTestStack++;
-            }
+        return false;
+    }
+
+    checkJumpTestsParamByEarning(jumpableParameter, current) {
+        if (current.earning <= this.jumpTestsParamByEarning) {
+            return this.jumpTestsParam(jumpableParameter);
+        }
+
+        return false;
+    }
+
+    jumpTestsParam(jumpableParameter) {
+        let jumped = false;
+        // determine the number of cursor to jump
+        for (
+            let index = this.parameters[jumpableParameter].getCurrent();
+            index <= this.parameters[jumpableParameter].max;
+            index = this.parameters[jumpableParameter].cleanFloat(index + this.parameters[jumpableParameter].increment)
+        ) {
+            this.jumpTestStack++;
+            jumped = true;
+        }
+
+        if (jumped) {
             this.jumpTestStack--; // remove the getCurrent test, because already tested
         }
+
+        return jumped;
     }
 
-    checkJumpTestMinusEarning() {
-        const current = this.results[this.results.length - 1];
-        const previous = this.results[this.results.length - 2];
-
-        if (current.earning < 0 && current.earning < previous.earning) {
+    checkJumpTestByEarning(current) {
+        if (current.earning <= this.jumpTestByEarning) {
             this.jumpTestStack++;
+            return true;
         }
+
+        return false;
     }
+
+    checkJumpTestByTrade(current) {
+        if (current.trades <= this.jumpTestByTrade) {
+            this.jumpTestStack++;
+            return true;
+        }
+
+        return false;
+    }
+
+    checkJumpTestByEarningMinus(current, previous) {
+        if (current.earning <= this.jumpTestByEarningMinus && current.earning < previous.earning) {
+            this.jumpTestStack++;
+            return true;
+        }
+
+        return false;
+    }
+
+    // MANAGE STATS
 
     collectInfos() {
         const indics = [];
@@ -445,8 +529,11 @@ class Strategy {
             estimate ending time: ${evalEstimateEndingTime}
             (option) debug: ${this.debug}
             (option) jumpTestAfterStart: ${this.jumpTestAfterStart}
-            (option) jumpTestZeroTrade: ${this.jumpTestZeroTrade}
-            (option) jumpTestMinusEarning: ${this.jumpTestMinusEarning}
+            (option) jumpTestsParamByTrade : ${this.jumpTestsParamByTrade}
+            (option) jumpTestsParamByEarning : ${this.jumpTestsParamByEarning}
+            (option) jumpTestByEarning : ${this.jumpTestByEarning}
+            (option) jumpTestByTrade : ${this.jumpTestByTrade}
+            (option) jumpTestByEarningMinus : ${this.jumpTestByEarningMinus}
         `);
     }
 
@@ -493,6 +580,14 @@ class Strategy {
             paramData[parameter.name] = parameter.getCurrent();
         });
         return paramData;
+    }
+
+    getCurrentResult() {
+        return this.results[this.results.length - 1];
+    }
+
+    getPreviousResult() {
+        return this.results[this.results.length - 2];
     }
 
     // UTILS

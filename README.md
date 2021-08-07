@@ -27,28 +27,36 @@ strategy.init({
     1: {min: 4, max: 6}, // default to `'auto'`
     2: {increment: 2} // default to `'auto'`
     3: {min: false, max: false, increment: false}, // disable `'auto'` mode
-    debug: true,
     jumpTestAfterStart: 2135,
-    jumpTestZeroTrade: true,
-    jumpTestMinusEarning: true,
+    jumpTestsParamByTrade: 0;
+    jumpTestsParamByEarning: -1000;
+    jumpTestByEarning: -50;
+    jumpTestByTrade: 25;
+    jumpTestByEarningMinus: -200;
+    debug: true,
 });
 ```
 
 ### global options
 
-| name | type | default | description |
-|------|------|---------|-------------|
-| `jumpTestAfterStart` | integer | `0` | start backtests after a specific number of tests (useful if script has been stop and restart it) |
-| `jumpTestZeroTrade` | boolean | `false` | only working if the last non-ignored parameter is a slider type. If a test provide a 0 trade, it jump all following cursor tests for the last parameter. (ex: useful for Orderflow) |
-| `jumpTestMinusEarning` | boolean | `false` | only working if the last non-ignored parameter is a slider type. If a test have a smaller earning that the previous one, it jump the following test in the last parameter. |
-| `debug` | boolean | `false` | only to help debugging |
+| name | type | default | priority | description |
+|------|------|---------|----------|-------------|
+| `jumpTestAfterStart` | integer | `0` | cumulative | start backtests after a specific number of tests (useful if script has been stop and restart it) |
+| `jumpTestsParamByTrade` | boolean / integer | `false` | 0 | (*) if a test <= "x" trade, it **jump all following** cursor tests in the last parameter. (ex: set to 0 useful for Orderflow) |
+| `jumpTestsParamByEarning` | boolean / integer | `false` | 1 | (*) if a test <= "x" earning, it **jump all following** cursor tests in the last parameter. (ex: set to -1000 useful for bad series) |
+| `jumpTestByEarning` | boolean / integer | `false` | 2 | (*) if a test <= "x" earning, it **jump one** next cursor test in the last parameter |
+| `jumpTestByTrade` | boolean / integer | `false` | 3 | (*) if a test <= "x" trade, it **jump one** next cursor test in the last parameter |
+| `jumpTestByEarningMinus` | boolean / integer | `false` | 4 | (*) if a test <= "x" earning and if it's smaller that the previous one, it **jump one** next cursor test in the last parameter |
+| `debug` | boolean | `false` | cumulative | only to help debugging |
+
+(*) : only work if the last non-ignored parameter is a slider type. And non cumulative with other ( *).
 
 ```javascript
 strategy.init({
     debug: true,
     jumpTestAfterStart: 2135,
-    jumpTestZeroTrade: true,
-    jumpTestMinusEarning: true,
+    jumpTestsParamByTrade: 5,
+    jumpTestByEarningMinus: true,
 });
 ```
 
@@ -97,21 +105,18 @@ strategy.start();
 
 ## Supported options
 
-|                      | slider | input + slider | switch | switch + slider | select |
-|:---------------------|:------:|:--------------:|:------:|:---------------:|:------:|
-| ignore               |:heavy_check_mark:|:heavy_check_mark:|:heavy_check_mark:|:x:|:heavy_check_mark:|
-| increment            |:heavy_check_mark:|:heavy_check_mark:|:x:|:x:|:x:|
-| min                  |:heavy_check_mark:|:heavy_check_mark:|:x:|:x:|:x:|
-| max                  |:heavy_check_mark:|:heavy_check_mark:|:x:|:x:|:x:|
-| jumpTestZeroTrade    |:heavy_check_mark:|:heavy_check_mark:|:x:|:x:|:x:|
-| jumpTestMinusEarning |:heavy_check_mark:|:heavy_check_mark:|:x:|:x:|:x:|
+|           | slider | input + slider | switch | switch + slider | select |
+|:----------|:------:|:--------------:|:------:|:---------------:|:------:|
+| ignore    |:heavy_check_mark:|:heavy_check_mark:|:heavy_check_mark:|:x:|:heavy_check_mark:|
+| increment |:heavy_check_mark:|:heavy_check_mark:|:x:|:x:|:x:|
+| min       |:heavy_check_mark:|:heavy_check_mark:|:x:|:x:|:x:|
+| max       |:heavy_check_mark:|:heavy_check_mark:|:x:|:x:|:x:|
 
 ## Already tested
 
 |               | Random | Payout | SAR | Orderflow | Delta | Streak | Stoch | Bollinger | MACD | RSI | Orderbook | Autocorr |
 |---------------|:------:|:------:|:---:|:---------:|:-----:|:------:|:-----:|:---------:|:----:|:---:|:---------:|:--------:|
-| **eth 15min** |        |    x   |     |     x     |   x   |        |  x    |     x     |  x   |  x  |     x     |          |
-|               |        |        |     |           |       |        |       |           |      |     |           |          |
+| **eth 15min** |        |    x   |     |     x     |   x   |        |   x   |     x     |  x   |  x  |     x     |          |
 
 ## Other
 
