@@ -275,13 +275,11 @@ class Strategy {
         if (validated) {
             await this.validateWaiting();
         } else {
-            this.updateLabelProgress();
             return false;
         }
 
         if (this.debug) console.log('-> Strategy end validate');
 
-        this.updateLabelProgress();
         return true;
     }
 
@@ -343,6 +341,7 @@ class Strategy {
             }
             
             this.backtestNumber++;
+            this.updateLabelProgress();
         }
 
         return true;
