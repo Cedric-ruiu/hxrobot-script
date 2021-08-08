@@ -18,9 +18,10 @@ let strategy = new Strategy('my-id-strategy');
 ## init
 
 ```javascript
-// basic init
 strategy.init();
 ```
+
+If the backtest evaluation is not satisfactory, you can change parameter, indicator, init options and call again init() method.
 
 ### global options
 
