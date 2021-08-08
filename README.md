@@ -36,7 +36,7 @@ strategy.init();
 
 (1*) : issue, maybe freeze interface several minute with huge value (+3000), and possibility that backtest process don't work.
 
-(2*) : only work if the last non-ignored parameter is a slider type. And non cumulative with other (2*).
+(2*) : only work if the last non-ignored parameter is a slider or optionalSlider type. And non cumulative with other (2*).
 
 ```javascript
 strategy.init({
@@ -56,10 +56,12 @@ You can affine what values to test by parameter. First UI parameter is 0.
 
 | name | type/value | default | description |
 |------|------|---------|-------------|
-| `increment` | `'auto'` / float / `false` | `'auto'` | default value (`'auto'`) keep only 10 cursor for the parameter. Set `false` to keep all cursor, or set a custom value number to increment (ex: `2`, `0.8`, etc.) |
-| `min` | `'auto'` / float / `false` | `'auto'` | default value (`'auto'`) remove the first cursor of the parameter. Set `false` to keep the extreme minimum value, or set a custom value for min (ex: `2`, `0.8`, etc.) |
-| `max` | `'auto'` / float / `false` | `'auto'` | Same as min, but for the max value |
+| `increment` | `'auto'` / float / `false` | `'auto'` | (1*) default value (`'auto'`) keep only 10 cursor for the parameter. Set `false` to keep all cursor, or set a custom value number to increment (ex: `2`, `0.8`, etc.) |
+| `min` | `'auto'` / float / `false` | `'auto'` | (1*) default value (`'auto'`) remove the first cursor of the parameter. Set `false` to keep the extreme minimum value, or set a custom value for min (ex: `2`, `0.8`, etc.) |
+| `max` | `'auto'` / float / `false` | `'auto'` | (1*) Same as min, but for the max value |
 | `ignore` | boolean | `false` | ignore this parameter, backtest never touch this one |
+
+(1*) : "Streak" indicator issue, the value showed in input is not the real value, inspect element (chrome console) or keep these raw values in mind: min = -27, max: 27, increment: 1
 
 ```javascript
 strategy.init({
@@ -80,29 +82,29 @@ strategy.start();
 
 ## Supported indicators
 
-| indicator | support | nb parameters | nb cursors | nb tests | nb days |
-|-----------|---------|---------------|------------|----------|---------|
-| Random | :heavy_check_mark: | 3 | 1202 | 10201000 | 1416 Days |
-| Payout | :heavy_check_mark: | 5 | 141 | 85600 | 12 Days |
-| SAR | :heavy_check_mark: | 7 | 338 | 705672000 | 98010 Days |
-| Orderflow | :heavy_check_mark: | 8 | 1044 | 6943132800 | 964324 Days |
-| Delta div | :heavy_check_mark: | 7 | 150 | 3341760 | 464 Days |
-| Streak | :x: | 6 | :grey_question: | :grey_question: | :grey_question: |
-| Stoch | :heavy_check_mark: | 6 | 70 | 96000 | 13 Days |
-| Bollinger | :heavy_check_mark: | 5 | 90 | 36000 | 5 Days |
-| MACD | :heavy_check_mark: | 5 | 100 | 43200 | 6 Days |
-| RSI | :heavy_check_mark: | 6 | 1041 | 288708000 | 40098 Days |
-| Orderbook | :x: | 7 | :grey_question: | :grey_question: | :grey_question: |
-| Autocorr | :heavy_check_mark: | 10 | 1088 | 48192192000 | 6693360 Days |
+| indicator | nb parameters | nb cursors | nb tests | nb days |
+|-----------|---------------|------------|----------|---------|
+| Random | 3 | 1202 | 10201000 | 1416 Days |
+| Payout | 5 | 141 | 85600 | 12 Days |
+| SAR | 7 | 338 | 705672000 | 98010 Days |
+| Orderflow | 8 | 1044 | 6943132800 | 964324 Days |
+| Delta div | 7 | 150 | 3341760 | 464 Days |
+| Streak | 6 | 92 | 89600 | 13 Days |
+| Stoch | 6 | 70 | 96000 | 13 Days |
+| Bollinger | 5 | 90 | 36000 | 5 Days |
+| MACD | 5 | 100 | 43200 | 6 Days |
+| RSI | 6 | 1041 | 288708000 | 40098 Days |
+| Orderbook | 7 | 539 | 4844102400 | 728558 Days |
+| Autocorr | 10 | 1088 | 48192192000 | 6693360 Days |
 
 ## Supported options
 
-|           | slider | input + slider | switch | switch + slider | select |
-|:----------|:------:|:--------------:|:------:|:---------------:|:------:|
-| ignore    |:heavy_check_mark:|:heavy_check_mark:|:heavy_check_mark:|:x:|:heavy_check_mark:|
-| increment |:heavy_check_mark:|:heavy_check_mark:|:x:|:x:|:x:|
-| min       |:heavy_check_mark:|:heavy_check_mark:|:x:|:x:|:x:|
-| max       |:heavy_check_mark:|:heavy_check_mark:|:x:|:x:|:x:|
+|           | slider | switch | optional slider | select |
+|:---------:|:--------------:|:------:|:---------------:|:------:|
+| ignore    |:heavy_check_mark:|:heavy_check_mark:|:heavy_check_mark:|:heavy_check_mark:|
+| increment |:heavy_check_mark:|:x:|:heavy_check_mark:|:x:|
+| min       |:heavy_check_mark:|:x:|:heavy_check_mark:|:x:|
+| max       |:heavy_check_mark:|:x:|:heavy_check_mark:|:x:|
 
 ## Already tested
 

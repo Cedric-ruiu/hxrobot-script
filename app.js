@@ -357,13 +357,15 @@ class Strategy {
     isJumpableParameter() {
         for (let i = this.parameters.length - 1; i >= 0; i--) {
             if (!this.parameters[i].options.ignore)  {
-                if (this.parameters[i].type === 'slider') {
-                    // search the last slider parameter not ignored
-                    if ((this.parameters[i].getCurrent() + this.parameters[i].increment) <= this.parameters[i].max)  {
+                if (this.parameters[i].type === 'slider' || this.parameters[i].type === 'optionalSlider') {
+                    // search the last slider/optionalSlider parameter not ignored
+                    // and optionalSlider not switch disabled
+                    if (this.parameters[i].getCurrent() !== false && (this.parameters[i].getCurrent() + this.parameters[i].increment) <= this.parameters[i].max)  {
                         // not the last cursor in this parameter, jump value is possible
                         return i;
                     } else {
-                        // we are on the last cursor, no jump
+                        // slider: on the last cursor, no jump
+                        // optionalSlider: on the last cursor, no jump OR on disabled switch
                         return false;
                     }
                 } else {
@@ -469,6 +471,11 @@ class Strategy {
     }
 
     checkJumpTestByEarningMinus(current, previous) {
+        // don't compare with previous if it's on first cursor
+        if (this.parameters[i].getCurrent() === this.parameters[i].min) {
+            return false;
+        }
+
         if (current.earning <= this.jumpTestByEarningMinus && current.earning < previous.earning) {
             this.jumpTestStack++;
             return true;
@@ -645,7 +652,8 @@ class Parameter {
         this.parameterDOM = elementDOM;
         this.name = this.parameterDOM.querySelector('.element-title').outerText;
         
-        if (this.parameterDOM.querySelector('.input-false')) {
+        // parameter type detection 
+        if (this.parameterDOM.querySelector('.element-input+.element-input')) {
             this.optionalSliderInit(options);
         } else if (this.parameterDOM.querySelector('.vue-js-switch')) {
             this.switchInit(options);
@@ -676,7 +684,7 @@ class Parameter {
                 break;
 
             case 'optionalSlider':
-                // TODO: type optionalSlider
+                this.optionalSliderReset();
                 break;
         }
     }
@@ -696,7 +704,7 @@ class Parameter {
                 break;
 
             case 'optionalSlider':
-                // TODO: type optionalSlider
+                this.optionalSliderDebug();
                 break;
         }
     }
@@ -704,17 +712,16 @@ class Parameter {
     getCurrent() {
         switch (this.type) {
             case 'switch':
-                return this.switchDOM.classList.contains('toggled');
+                return this.switchGetCurrent();
         
             case 'slider':
-                return parseFloat(this.sliderDotDOM.getAttribute('aria-valuenow'));
+                return this.sliderGetCurrent();
 
             case 'select':
-                return this.selectDOM.selectedIndex;
+                return this.selectGetCurrent();
 
             case 'optionalSlider':
-                // TODO: type optionalSlider
-                // return break;
+                return this.optionalSliderGetCurrent();
         }
     }
 
@@ -735,7 +742,7 @@ class Parameter {
                 break;
 
             case 'optionalSlider':
-                // TODO: type optionalSlider
+                this.optionalSliderIncrement();
                 break;
         }
     }
@@ -746,7 +753,7 @@ class Parameter {
         this.type = 'slider';
         this.sliderDOM = this.parameterDOM.querySelector('.vue-slider');
         this.sliderDotDOM = this.parameterDOM.querySelector('.vue-slider-dot');
-        this.inputDOM = this.parameterDOM.querySelector('input');
+        this.inputDOM = this.parameterDOM.querySelector('input[type="number"]:not([disabled])');
         this.options = {...this.optionsDefault, ...options};
 
         // default values
@@ -818,16 +825,16 @@ class Parameter {
     }
 
     sliderReset() {
-        if(this.type !== 'slider') return false;
-
         if(this.getCurrent() !== this.min) {
             this.sliderSetValue(this.min);
         }
     }
 
-    sliderSetValue(value) {
-        if(this.type !== 'slider') return false;
+    sliderGetCurrent() {
+        return parseFloat(this.sliderDotDOM.getAttribute('aria-valuenow'));
+    }
 
+    sliderSetValue(value) {
         this.sliderDOM.__vue__.setValue(value);
     }
 
@@ -869,44 +876,20 @@ class Parameter {
         this.count = 2;
         this.switchDOM = this.parameterDOM.querySelector('.vue-js-switch');
         this.options = {...this.optionsDefault, ...options};
-
-        if (typeof options.min !== 'undefined') {
-            console.warn(`
-                parameter: '${this.name}'
-                'min' options at '${options.min}' isn't supported on switch
-                (option ignored)
-            `);
-        }
-
-        if(typeof options.max !== 'undefined') {
-            console.warn(`
-                parameter: '${this.name}'
-                'max' options at '${options.max}' isn't supported on switch
-                (option ignored)
-            `);
-        }
-
-        if (typeof options.increment !== 'undefined') {
-            console.warn(`
-                parameter: '${this.name}'
-                'increment' options '${options.increment}' isn't supported on switch
-                (option ignored)
-            `);
-        }
     }
 
     switchReset() {
-        if (this.type !== 'switch') return false;
-
         this.switchSetValue(false);
     }
 
-    switchSetValue(value = 'auto') {
-        if (this.type !== 'switch') return false;
+    switchGetCurrent() {
+        return this.switchDOM.classList.contains('toggled');
+    }
 
+    switchSetValue(value = 'auto') {
         if (value === 'auto'
-            || (value && !this.switchDOM.classList.contains('toggled'))
-            || (!value && this.switchDOM.classList.contains('toggled'))) {
+            || (value && !this.switchGetCurrent())
+            || (!value && this.switchGetCurrent())) {
             this.switchDOM.click();
         }
     }
@@ -934,14 +917,14 @@ class Parameter {
     }
 
     selectReset() {
-        if (this.type !== 'select') return false;
-
         this.selectSetValue(this.min);
     }
 
-    selectSetValue(value) {
-        if (this.type !== 'select') return false;
+    selectGetCurrent() {
+        return this.selectDOM.selectedIndex;
+    }
 
+    selectSetValue(value) {
         // set value
         this.selectDOM.selectedIndex = parseInt(value);
 
@@ -972,24 +955,43 @@ class Parameter {
 
     // OPTIONAL SLIDER (SWITCH + SLIDER)
 
-    optionalSliderInit() {
-
+    optionalSliderInit(options = {}) {
+        this.switchDOM = this.parameterDOM.querySelector('.vue-js-switch');
+        if (!this.switchGetCurrent()) {
+            this.switchSetValue(true); //enable switch to access slider
+        }
+        this.sliderInit(options);
+        this.type = 'optionalSlider';
+        this.count++; // +1 to add off switch cursor
+        this.options = {...this.optionsDefault, ...options};
     }
 
     optionalSliderReset() {
-
+        this.switchSetValue(true); //enable switch to access slider
+        this.sliderReset();
+        this.switchReset();
     }
 
-    optionalSliderSetValue() {
+    optionalSliderGetCurrent() {
+        return this.switchGetCurrent() ? this.sliderGetCurrent() : false;
+    }
 
+    optionalSliderIncrement(cursor = 'auto') {
+        if(this.switchGetCurrent()) {
+            this.sliderIncrement(cursor);
+        } else {
+            this.switchSetValue(true);
+        }
     }
 
     optionalSliderDebug() {
-        
-    }
-
-    optionalSliderIncrement() {
-        
+        console.log(
+            '--PARAMETER: ' + this.name + '\n' +
+            'type: ' + this.type + '\n' +
+            'current: ' + this.getCurrent() + '\n' +
+            'count: ' + this.count
+        );
+        console.log(this.selectDOM);
     }
 
     // Utils
