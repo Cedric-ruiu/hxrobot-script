@@ -24,7 +24,9 @@ class Strategy {
     dateStart = 0;
     dateEnd = 0;
 
-    constructor(strategy) {
+    constructor(strategy = null) {
+        if (strategy === null) return;
+
         if (typeof strategy === 'string') {
             this.strategy = document.getElementById(strategy);
         } else if (typeof strategy === 'number') {
@@ -1008,4 +1010,15 @@ class Parameter {
     }
 }
 
-let strategy = new Strategy(0);
+const importStrategy = new Strategy();
+
+console.log(`
+    // 1. choose the strategy panel
+    let strategy = new Strategy(0);
+
+    // 2. init with options
+    strategy.init();
+
+    // start !
+    strategy.start();
+`);

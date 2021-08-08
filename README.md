@@ -5,7 +5,7 @@ copy/paste `dist/hxrobot-script.js` into Chrome dev console
 and choose a strategy panel, several way to do this :
 
 ```javascript
-// provide the number
+// preferred: provide the number (0-9)
 let strategy = new Strategy(0);
 
 // provide element
