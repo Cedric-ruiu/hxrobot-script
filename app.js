@@ -951,6 +951,15 @@ class Parameter {
         this.selectDOM.dispatchEvent(evt);
     }
 
+    selectIncrement(cursor) {
+        const incrementalValue = this.min + (this.increment * cursor);
+        if (incrementalValue <= this.max) {
+            this.selectSetValue(incrementalValue);
+        } else {
+            console.warn(`bad select increment ${this.getCurrent()} + ${this.increment} for a max ${this.max} (${this.name})`);
+        }
+    }
+
     selectDebug() {
         console.log(
             '--PARAMETER: ' + this.name + '\n' +
@@ -959,15 +968,6 @@ class Parameter {
             'count: ' + this.count
         );
         console.log(this.selectDOM);
-    }
-
-    selectIncrement(cursor) {
-        const incrementalValue = this.min + (this.increment * cursor);
-        if (incrementalValue <= this.max) {
-            this.selectSetValue(incrementalValue);
-        } else {
-            console.warn(`bad select increment ${this.getCurrent()} + ${this.increment} for a max ${this.max} (${this.name})`);
-        }
     }
 
     // OPTIONAL SLIDER (SWITCH + SLIDER)
