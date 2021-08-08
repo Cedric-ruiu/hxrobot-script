@@ -831,18 +831,6 @@ class Parameter {
         this.sliderDOM.__vue__.setValue(value);
     }
 
-    sliderDebug() {
-        console.log(
-            '--PARAMETER: ' + this.name + '\n' +
-            'type: ' + this.type + '\n' +
-            'min: ' + this.min + '\n' +
-            'max: ' + this.max + '\n' +
-            'increment: ' + this.increment + '\n' +
-            'count: ' + this.count
-        );
-        console.log(this.sliderDOM);
-    }
-
     sliderIncrement(cursor = 'auto') {
         let incrementalValue = 0;
         if (cursor === 'auto') {   
@@ -860,6 +848,18 @@ class Parameter {
         } else {
             console.warn(`bad increment ${this.getCurrent()} + ${this.increment} for a max ${this.max} (${this.name})`);
         }
+    }
+
+    sliderDebug() {
+        console.log(
+            '--PARAMETER: ' + this.name + '\n' +
+            'type: ' + this.type + '\n' +
+            'min: ' + this.min + '\n' +
+            'max: ' + this.max + '\n' +
+            'increment: ' + this.increment + '\n' +
+            'count: ' + this.count
+        );
+        console.log(this.sliderDOM);
     }
 
     // SWITCH
