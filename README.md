@@ -19,14 +19,27 @@ let strategy = new Strategy('my-id-strategy');
 
 ```javascript
 // basic init
-strategy.init({});
+strategy.init();
+```
 
-// or full options
+### global options
+
+| name | type | default | priority | description |
+|------|------|---------|----------|-------------|
+| `jumpTestAfterStart` | integer | `0` | cumulative | (1*) start backtests after a specific number of tests (useful if script has been stop and restart it) |
+| `jumpTestsParamByTrade` | boolean / integer | `false` | 0 | (2*) if a test <= "x" trade, it **jump all following** cursor tests in the last parameter. (ex: set to 0 useful for Orderflow) |
+| `jumpTestsParamByEarning` | boolean / integer | `false` | 1 | (2*) if a test <= "x" earning, it **jump all following** cursor tests in the last parameter. (ex: set to -1000 useful for bad series) |
+| `jumpTestByEarning` | boolean / integer | `false` | 2 | (2*) if a test <= "x" earning, it **jump one** next cursor test in the last parameter |
+| `jumpTestByTrade` | boolean / integer | `false` | 3 | (2*) if a test <= "x" trade, it **jump one** next cursor test in the last parameter |
+| `jumpTestByEarningMinus` | boolean / integer | `false` | 4 | (2*) if a test <= "x" earning and if it's smaller that the previous one, it **jump one** next cursor test in the last parameter |
+| `debug` | boolean | `false` | cumulative | only to help debugging |
+
+(1*) : issue, maybe freeze interface several minute with huge value (+3000), and possibility that backtest process don't work.
+
+(2*) : only work if the last non-ignored parameter is a slider type. And non cumulative with other (2*).
+
+```javascript
 strategy.init({
-    0: {ignore: true}, // 'ignore' to not touch this parameter, default to `false`
-    1: {min: 4, max: 6}, // default to `'auto'`
-    2: {increment: 2} // default to `'auto'`
-    3: {min: false, max: false, increment: false}, // disable `'auto'` mode
     jumpTestAfterStart: 2135,
     jumpTestsParamByTrade: 0;
     jumpTestsParamByEarning: -1000;
@@ -37,30 +50,9 @@ strategy.init({
 });
 ```
 
-### global options
-
-| name | type | default | priority | description |
-|------|------|---------|----------|-------------|
-| `jumpTestAfterStart` | integer | `0` | cumulative | start backtests after a specific number of tests (useful if script has been stop and restart it) |
-| `jumpTestsParamByTrade` | boolean / integer | `false` | 0 | (*) if a test <= "x" trade, it **jump all following** cursor tests in the last parameter. (ex: set to 0 useful for Orderflow) |
-| `jumpTestsParamByEarning` | boolean / integer | `false` | 1 | (*) if a test <= "x" earning, it **jump all following** cursor tests in the last parameter. (ex: set to -1000 useful for bad series) |
-| `jumpTestByEarning` | boolean / integer | `false` | 2 | (*) if a test <= "x" earning, it **jump one** next cursor test in the last parameter |
-| `jumpTestByTrade` | boolean / integer | `false` | 3 | (*) if a test <= "x" trade, it **jump one** next cursor test in the last parameter |
-| `jumpTestByEarningMinus` | boolean / integer | `false` | 4 | (*) if a test <= "x" earning and if it's smaller that the previous one, it **jump one** next cursor test in the last parameter |
-| `debug` | boolean | `false` | cumulative | only to help debugging |
-
-(*) : only work if the last non-ignored parameter is a slider type. And non cumulative with other ( *).
-
-```javascript
-strategy.init({
-    debug: true,
-    jumpTestAfterStart: 2135,
-    jumpTestsParamByTrade: 5,
-    jumpTestByEarningMinus: true,
-});
-```
-
 ### parameter options
+
+You can affine what values to test by parameter. First UI parameter is 0.
 
 | name | type/value | default | description |
 |------|------|---------|-------------|
