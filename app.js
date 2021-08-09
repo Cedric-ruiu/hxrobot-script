@@ -413,7 +413,7 @@ class Strategy {
                 // Priority 4
                 if (!jumped && this.jumpTestByEarningMinus !== false) {
                     const previous = this.getPreviousResult();
-                    jumped = this.checkJumpTestByEarningMinus(current, previous);
+                    jumped = this.checkJumpTestByEarningMinus(jumpableParameter, current, previous);
                 }
             }
         }
@@ -472,9 +472,9 @@ class Strategy {
         return false;
     }
 
-    checkJumpTestByEarningMinus(current, previous) {
+    checkJumpTestByEarningMinus(jumpableParameter, current, previous) {
         // don't compare with previous if it's on first cursor
-        if (this.parameters[i].getCurrent() === this.parameters[i].min) {
+        if (this.parameters[jumpableParameter].getCurrent() === this.parameters[jumpableParameter].min) {
             return false;
         }
 
