@@ -42,11 +42,11 @@ If the backtest evaluation is not satisfactory, you can change parameter, indica
 ```javascript
 strategy.init({
     jumpTestAfterStart: 2135,
-    jumpTestsParamByTrade: 0;
-    jumpTestsParamByEarning: -1000;
-    jumpTestByEarning: -50;
-    jumpTestByTrade: 25;
-    jumpTestByEarningMinus: -200;
+    jumpTestsParamByTrade: 0,
+    jumpTestsParamByEarning: -1000,
+    jumpTestByEarning: -50,
+    jumpTestByTrade: 25,
+    jumpTestByEarningMinus: -200,
     debug: true,
 });
 ```
