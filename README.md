@@ -83,20 +83,20 @@ strategy.start();
 
 ## Supported indicators
 
-| indicator | nb parameters | nb cursors | nb tests | nb days |
-|-----------|---------------|------------|----------|---------|
-| Random | 3 | 1202 | 10201000 | 1416 Days |
-| Payout | 5 | 141 | 85600 | 12 Days |
-| SAR | 7 | 338 | 705672000 | 98010 Days |
-| Orderflow | 8 | 1044 | 6943132800 | 964324 Days |
-| Delta div | 7 | 150 | 3341760 | 464 Days |
-| Streak | 6 | 92 | 89600 | 13 Days |
-| Stoch | 6 | 70 | 96000 | 13 Days |
-| Bollinger | 5 | 90 | 36000 | 5 Days |
-| MACD | 5 | 100 | 43200 | 6 Days |
-| RSI | 6 | 1041 | 288708000 | 40098 Days |
-| Orderbook | 7 | 539 | 4844102400 | 728558 Days |
-| Autocorr | 10 | 1088 | 48192192000 | 6693360 Days |
+| indicator | nb parameters | nb cursors | nb tests | total testing time | init() testing time |
+|-----------|---------------|------------|----------|--------------------|---------------------|
+| Random | 3 | 1202 | 10201000 | 1889 Days | 4.4 Hrs |
+| Payout | 5 | 141 | 85600 | 16 Days | 12.8 Hrs |
+| SAR | 7 | 338 | 705672000 | 139155 Days | 29.6 Days |
+| Orderflow | 8 | 1044 | 6943132800 | 1285765 Days | 53.3 Days |
+| Delta div | 7 | 150 | 3341760 | 619 Days | 5.3 Days |
+| Streak | 6 | 92 | 89600 | 16 Days | 1.3 Days |
+| Stoch | 6 | 70 | 96000 | 16 Days | 1.9 Days |
+| Bollinger | 5 | 90 | 36000 | 7 Days | 7.1 Hrs |
+| MACD | 5 | 100 | 43200 | 8 Days | 7.1 Hrs |
+| RSI | 6 | 1041 | 288708000 | 53573 Days | 3 Days |
+| Orderbook | 7 | 539 | 4844102400 | 86567456 Days | 72.6 Days |
+| Autocorr | 10 | 1088 | 48192192000 | 8924480 Days | 213.3 Days |
 
 ## Supported options
 
@@ -128,5 +128,5 @@ strategy.init({
     7: {min:false, max:false, increment:false},
     8: {min:false, max:false, increment:false},
     9: {min:false, max:false, increment:false},
-})
+});
 ```
