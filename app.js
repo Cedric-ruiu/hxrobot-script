@@ -23,6 +23,7 @@ class Strategy {
     debug = false;
     dateStart = 0;
     dateEnd = 0;
+    started = false; // security check for a started BT
 
     constructor(strategy = null) {
         if (strategy === null) return;
@@ -114,6 +115,11 @@ class Strategy {
      * @returns 
      */
     init(options = {}) {
+        if (this.started) {
+            console.warn('Strategy already started, use stop() method first');
+            return;
+        }
+
         if (!this.strategy.querySelector('.indicators')) {
             console.error('indicators panel is closed. Opening it before...');
             return;
@@ -182,6 +188,13 @@ class Strategy {
     }
 
     async start() {
+        if (this.started) {
+            console.warn('Strategy already started, use stop() method first');
+            return;
+        }
+
+        this.started = true;
+
         // Track time
         this.dateStart = new Date().getTime();
 
@@ -204,7 +217,21 @@ class Strategy {
 
         // start process to export data
         this.exportResults();
+
+        this.started = false;
     };
+
+    stop() {
+        this.started = false;
+
+        console.log(`
+            --BACKTEST STOPPED--
+            To continue backtest, use same strat & init config, and add:
+                jumpTestAfterStart: ${this.backtestNumber + 1}
+            waiting last test... If nothing hapening, tap: 
+                strategy.export.result()
+        `);
+    }
 
     startInfo() {
         this.interfaceDecorator('lock');
@@ -309,6 +336,7 @@ class Strategy {
     }
 
     async backtest(paramIndex = 0) {
+        if (!this.started) return false;
         if (this.debug) console.log(`-> Strategy backtest [${paramIndex}]`);
 
         if (!this.parameters[paramIndex].options.ignore) {
@@ -334,6 +362,7 @@ class Strategy {
     }
 
     async backtestParam(paramIndex = 0) {
+        if (!this.started) return false;
         if (paramIndex + 1 < this.parameters.length) {
             if (this.debug) console.log(`--> parameter[${paramIndex}] go to parameter[${paramIndex + 1}]`);
             await this.backtest(paramIndex + 1);

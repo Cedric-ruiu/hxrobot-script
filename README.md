@@ -73,12 +73,20 @@ strategy.init({
 });
 ```
 
-## Start backtests
+## Start backtest
 
-PC must not be on standby, and the chrome tab must be active during all time for the backtest.
+PC must not be on standby, and the chrome tab must be active during all time for the backtest. Just wait finish backtest, that automatically provide a download CSV.
 
 ```javascript
 strategy.start();
+```
+
+## Stop backtest
+
+If for one reason you need to stop the backtest process, just use the following command.
+
+```javascript
+strategy.stop();
 ```
 
 ## Supported indicators
