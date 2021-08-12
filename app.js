@@ -65,7 +65,7 @@ class Strategy {
             const label = document.createElement("div");
             label.style.position = 'absolute';
             label.style.color = '#fff';
-            label.style.top = '30px';
+            label.style.top = '45px';
             label.style.left = '0';
             label.style.backgroundColor = 'rgba(20, 240, 20, 0.8)';
             label.style.padding = '5px 10px';
@@ -575,15 +575,15 @@ class Strategy {
     getPerfData() {
         const perfPanel = this.strategy.querySelectorAll('.perf-stats .stat-perf');
         const perfData = [];
-        perfData['earning'] = parseFloat(perfPanel[0].querySelectorAll('div')[1].childNodes[0].nodeValue.trim().replace(/[^\d.-]/g, ''));
-        perfData['winrate'] = parseFloat(perfPanel[2].querySelector('.number').outerText.replace(/[^\d.-]/g, ''));
+        perfData['earning'] = parseFloat(this.strategy.querySelector('.perf-stats .backtest-perf').childNodes[0].nodeValue.trim().replace(/[^\d.-]/g, ''));
+        perfData['winrate'] = parseFloat(perfPanel[0].querySelector('.number').outerText.replace(/[^\d.-]/g, ''));
         perfData['payout'] = parseFloat(perfPanel[3].querySelector('.number').outerText.replace(/[^\d.-]/g, ''));
-        perfData['drawdown'] = parseFloat(perfPanel[5].querySelector('.number').outerText);
+        perfData['drawdown'] = parseFloat(perfPanel[4].querySelector('.number').outerText);
         perfData['ratio'] = parseFloat(0 < perfData['earning'] ? perfData['earning'] / (Math.abs(perfData['drawdown']) !== 0 ? Math.abs(perfData['drawdown']): 1) : 0).toFixed(2);
         perfData['trades'] = parseInt(perfPanel[6].querySelector('.number').outerText);
-        perfData['winstreak'] = parseInt(perfPanel[7].querySelector('.number').outerText);
-        perfData['losestreak'] = parseInt(perfPanel[8].querySelector('.number').outerText);
-        perfData['pool'] = parseInt(perfPanel[4].querySelector('.number').outerText);
+        perfData['winstreak'] = parseInt(perfPanel[2].querySelector('.number').outerText);
+        perfData['losestreak'] = parseInt(perfPanel[5].querySelector('.number').outerText);
+        perfData['pool'] = parseInt(perfPanel[1].querySelector('.number').outerText);
         return perfData;
     }
 
