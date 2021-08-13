@@ -47,10 +47,10 @@ class Strategy {
     interfaceDecorator(state) {
         switch (state) {
             case 'available':
-                this.strategy.style.border = '3px dashed rgba(20, 240, 20, 0.8)';
+                this.strategy.style.border = '3px dashed #00FF00';
                 break;
             case 'lock':
-                this.strategy.style.border = '3px dashed #ff25ab';
+                this.strategy.style.border = '3px dashed #ed2939';
                 break;
             default:
                 break;
@@ -68,7 +68,7 @@ class Strategy {
             label.style.color = '#fff';
             label.style.top = '45px';
             label.style.left = '0';
-            label.style.backgroundColor = 'rgba(20, 240, 20, 0.8)';
+            label.style.backgroundColor = '#00FF00';
             label.style.padding = '5px 10px';
             label.style.zIndex = '5';
             label.classList.add('cr-label');
