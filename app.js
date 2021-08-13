@@ -204,7 +204,6 @@ class Strategy {
         // reset all parameters and force saveResults
         // avoid case of ignored first test because nothing to validate
         this.resetParameters();
-        if(!await this.validate()) this.saveResults();
 
         // start all backtests, first will be ignored
         await this.backtest()
@@ -308,21 +307,28 @@ class Strategy {
 
         if (validated) {
             await this.validateWaiting();
-        } else {
-            return false;
+
+            // tricks: add 500 milliseconds to be sure that correct data is loaded (drawdown)
+            const waitPerfDataLoad = await new Promise(resolve => {
+                setTimeout(() => {
+                    resolve(true);
+                    return;
+                }, 500);
+            });
         }
+
+        this.saveResults();
 
         if (this.debug) console.log('-> Strategy end validate');
 
         return true;
     }
 
-    async validateWaiting(autoSave = true) {
+    async validateWaiting() {
         return await new Promise(resolve => {
             const interval = setInterval(() => {
                 let duration = 0;
-                if (this.strategy.querySelector('.perf-stats .stat-perf') !== null) {
-                    if (autoSave) this.saveResults();
+                if (this.strategy.querySelector('.graph').style.opacity === '1') {
                     resolve(true);
                     clearInterval(interval);
                     return true;
