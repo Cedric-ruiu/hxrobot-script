@@ -525,13 +525,13 @@ class Strategy {
 
     collectInfos() {
         const indics = [];
-        document.querySelectorAll('.indicator-title .name:not(.selected)').forEach(indic => indics.push(indic.outerText));
+        document.querySelectorAll('.indicator-title .name:not(.selected)').forEach(indic => indics.push(indic.innerText));
 
         return {
-            timeframe: document.querySelector('.contests .choice2.selected').outerText.trim(),
-            currency: document.querySelector('.contests .choice3.selected').outerText.trim(),
+            timeframe: document.querySelector('.contests .choice2.selected').innerText.trim(),
+            currency: document.querySelector('.contests .choice3.selected').innerText.trim(),
             earningCurrency: document.querySelector('.category-rm .vue-js-switch.toggled') ? 'BTC' : 'HXRO',
-            currentIndicator: this.indicators.querySelector('.indicator-title .name.selected').outerText.trim(),
+            currentIndicator: this.indicators.querySelector('.indicator-title .name.selected').innerText.trim(),
             associateIndicator: indics,
         }
     }
@@ -611,14 +611,14 @@ class Strategy {
         const perfPanel = this.strategy.querySelectorAll('.perf-stats .stat-perf');
         const perfData = [];
         perfData['earning'] = parseFloat(this.strategy.querySelector('.perf-stats .backtest-perf').childNodes[0].nodeValue.trim().replace(/[^\d.-]/g, ''));
-        perfData['winrate'] = parseFloat(perfPanel[0].querySelector('.number').outerText.replace(/[^\d.-]/g, ''));
-        perfData['payout'] = parseFloat(perfPanel[3].querySelector('.number').outerText.replace(/[^\d.-]/g, ''));
-        perfData['drawdown'] = parseFloat(perfPanel[4].querySelector('.number').outerText);
+        perfData['winrate'] = parseFloat(perfPanel[0].querySelector('.number').innerText.replace(/[^\d.-]/g, ''));
+        perfData['payout'] = parseFloat(perfPanel[3].querySelector('.number').innerText.replace(/[^\d.-]/g, ''));
+        perfData['drawdown'] = parseFloat(perfPanel[4].querySelector('.number').innerText);
         perfData['ratio'] = parseFloat(0 < perfData['earning'] ? perfData['earning'] / (Math.abs(perfData['drawdown']) !== 0 ? Math.abs(perfData['drawdown']): 1) : 0).toFixed(2);
-        perfData['trades'] = parseInt(perfPanel[6].querySelector('.number').outerText);
-        perfData['winstreak'] = parseInt(perfPanel[2].querySelector('.number').outerText);
-        perfData['losestreak'] = parseInt(perfPanel[5].querySelector('.number').outerText);
-        perfData['pool'] = parseInt(perfPanel[1].querySelector('.number').outerText);
+        perfData['trades'] = parseInt(perfPanel[6].querySelector('.number').innerText);
+        perfData['winstreak'] = parseInt(perfPanel[2].querySelector('.number').innerText);
+        perfData['losestreak'] = parseInt(perfPanel[5].querySelector('.number').innerText);
+        perfData['pool'] = parseInt(perfPanel[1].querySelector('.number').innerText);
         return perfData;
     }
 
@@ -687,7 +687,7 @@ class Parameter {
 
     constructor(elementDOM, options = {}) {
         this.parameterDOM = elementDOM;
-        this.name = this.parameterDOM.querySelector('.element-title').outerText;
+        this.name = this.parameterDOM.querySelector('.element-title').innerText;
         
         // parameter type detection 
         if (this.parameterDOM.querySelector('.element-input+.element-input')) {
