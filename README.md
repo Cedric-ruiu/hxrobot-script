@@ -6,19 +6,19 @@ and choose a strategy panel, several way to do this :
 
 ```javascript
 // preferred: provide the number (0-9)
-let strategy = new Strategy(0);
+let strat1 = new Strategy(0);
 
 // provide element
-let strategy = new Strategy(document.querySelector('.strategy'));
+let strat1 = new Strategy(document.querySelector('.strategy'));
 
 // provide added ID name
-let strategy = new Strategy('my-id-strategy');
+let strat1 = new Strategy('my-id-strategy');
 ```
 
 ## init
 
 ```javascript
-strategy.init();
+strat1.init();
 ```
 
 If the backtest evaluation is not satisfactory, you can change parameter, indicator, init options and call again init() method.
@@ -40,7 +40,7 @@ If the backtest evaluation is not satisfactory, you can change parameter, indica
 (2*) : only work if the last non-ignored parameter is a slider or optionalSlider type. And non cumulative with other (2*).
 
 ```javascript
-strategy.init({
+strat1.init({
     jumpTestAfterStart: 2135,
     jumpTestsParamByTrade: 0,
     jumpTestsParamByEarning: -1000,
@@ -65,7 +65,7 @@ You can affine what values to test by parameter. First UI parameter is 0.
 (1*) : "Streak" indicator issue, the value showed in input is not the real value, inspect element (chrome console) or keep these raw values in mind: min = -27, max: 27, increment: 1
 
 ```javascript
-strategy.init({
+strat1.init({
     0: {ignore: true},
     1: {min: 4, max: 6},
     2: {increment: 2},
@@ -78,7 +78,7 @@ strategy.init({
 PC must not be on standby, and the chrome tab must be active during all time for the backtest. Just wait finish backtest, that automatically provide a download CSV.
 
 ```javascript
-strategy.start();
+strat1.start();
 ```
 
 ## Stop backtest
@@ -86,7 +86,7 @@ strategy.start();
 If for one reason you need to stop the backtest process, just use the following command.
 
 ```javascript
-strategy.stop();
+strat1.stop();
 ```
 
 ## Supported indicators
@@ -125,7 +125,7 @@ strategy.stop();
 
 ```javascript
 // Test indicator with fully backtests
-strategy.init({
+strat1.init({
     0: {min:false, max:false, increment:false},
     1: {min:false, max:false, increment:false},
     2: {min:false, max:false, increment:false},

@@ -1049,11 +1049,11 @@ const importStrategy = new Strategy();
 
 console.log(`
     // 1. choose the strategy panel
-    let strategy = new Strategy(0);
+    let strat1 = new Strategy(0);
 
     // 2. init with options
-    strategy.init();
+    strat1.init();
 
     // start !
-    strategy.start();
+    strat1.start();
 `);
