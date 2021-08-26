@@ -89,6 +89,22 @@ If for one reason you need to stop the backtest process, just use the following 
 strat1.stop();
 ```
 
+## Exception - Streak
+
+The slider parameter **Trade condition** of **Streak** parameter has different value between hxrobot display and the real data that script can get. The following table show the correspondence.
+
+| hxrobot | script | | hxrobot | script | | hxrobot | script | | hxrobot | script | | hxrobot | script | | hxrobot | script | | hxrobot | script |
+|---:|:---|---|---:|:---|---|---:|:---|---|---:|:---|---|---:|:---|---|---:|:---|---|---:|:---|
+| 0.001 | -27 | | 0.01 | -18 | | 0.1 | -9 | | 1 | 0 | | 10 | 9  | | 100 | 18 | | 1000 | 27 |
+| 0.002 | -26 | | 0.02 | -17 | | 0.2 | -8 | | 2 | 1 | | 20 | 10 | | 200 | 19 | |      |    |
+| 0.003 | -25 | | 0.03 | -16 | | 0.3 | -7 | | 3 | 2 | | 30 | 11 | | 300 | 20 | |      |    |
+| 0.004 | -24 | | 0.04 | -15 | | 0.4 | -6 | | 4 | 3 | | 40 | 12 | | 400 | 21 | |      |    |
+| 0.005 | -23 | | 0.05 | -14 | | 0.5 | -5 | | 5 | 4 | | 50 | 13 | | 500 | 22 | |      |    |
+| 0.006 | -22 | | 0.06 | -13 | | 0.6 | -4 | | 6 | 5 | | 60 | 14 | | 600 | 23 | |      |    |
+| 0.007 | -21 | | 0.07 | -12 | | 0.7 | -3 | | 7 | 6 | | 70 | 15 | | 700 | 24 | |      |    |
+| 0.008 | -20 | | 0.08 | -11 | | 0.8 | -2 | | 8 | 7 | | 80 | 16 | | 800 | 25 | |      |    |
+| 0.009 | -19 | | 0.09 | -10 | | 0.9 | -1 | | 9 | 8 | | 90 | 17 | | 900 | 26 | |      |    |
+
 ## Supported indicators
 
 | indicator | nb parameters | nb cursors | nb tests | total testing time | init() testing time |
