@@ -18,6 +18,7 @@ class Strategy {
     jumpTestByEarning = false; // jump one following cursor test for last slider indic if earning smaller than previous
     jumpTestByTrade = false; // jump one following cursor test for last slider indic if earning smaller than previous
     jumpTestByEarningMinus = false; // jump one following cursor test for last slider indic if earning smaller than previous
+    jumpedTest = []; // list number of jumped backtests
     backtestNumber = 0; // number of processed backtests (with jumped)
     backtestTotal = 0; // total of backtests
     debug = false;
@@ -162,22 +163,27 @@ class Strategy {
 
         if (typeof options.jumpTestsParamByTrade !== 'undefined') {
             this.jumpTestsParamByTrade = options.jumpTestsParamByTrade;
+            this.jumpedTest['jumpTestsParamByTrade'] = 0;
         }
 
         if (typeof options.jumpTestsParamByEarning !== 'undefined') {
             this.jumpTestsParamByEarning = options.jumpTestsParamByEarning;
+            this.jumpedTest['jumpTestsParamByEarning'] = 0;
         }
 
         if (typeof options.jumpTestByEarning !== 'undefined') {
             this.jumpTestByEarning = options.jumpTestByEarning;
+            this.jumpedTest['jumpTestByEarning'] = 0;
         }
 
         if (typeof options.jumpTestByTrade !== 'undefined') {
             this.jumpTestByTrade = options.jumpTestByTrade;
+            this.jumpedTest['jumpTestByTrade'] = 0;
         }
 
         if (typeof options.jumpTestByEarningMinus !== 'undefined') {
             this.jumpTestByEarningMinus = options.jumpTestByEarningMinus;
+            this.jumpedTest['jumpTestByEarningMinus'] = 0;
         }
 
         if (options.debug) {
@@ -247,12 +253,25 @@ class Strategy {
         this.interfaceDecorator('available');
         this.setLabel(`100% - finish`);
 
+        let totalJumpedTest = 0;
+        let infoJump = '';
+
+        if (0 < this.jumpTestAfterStart) {
+            infoJump += `\t\t- jumpTestAfterStart: ${this.jumpTestAfterStart}\n`;
+            totalJumpedTest += this.jumpTestAfterStart;
+        }
+
+        Object.entries(this.jumpedTest).forEach(([key, value]) => {
+            infoJump += `\t\- t${key}: ${value}\n`;
+            totalJumpedTest += value;
+        });
+
         console.log(`
             --BACKTEST END--
             start time: ${new Date(this.dateStart).toLocaleString()}
             end time: ${new Date(this.dateEnd).toLocaleString()}
             tests: ${this.results.length}
-            jumped tests: ${this.backtestTotal - (this.results.length)}
+            jumped tests: ${totalJumpedTest}\n${infoJump}
         `);
     }
 
@@ -274,6 +293,7 @@ class Strategy {
         this.jumpTestByEarning = false;
         this.jumpTestByTrade = false;
         this.jumpTestByEarningMinus = false;
+        this.jumpedTest = [];
         this.backtestNumber = 0;
         this.backtestTotal = 0;
         this.debug = false;
@@ -456,7 +476,7 @@ class Strategy {
 
     checkJumpTestsParamByTrade(jumpableParameter, current) {
         if (current.trades <= this.jumpTestsParamByTrade) {
-            return this.jumpTestsParam(jumpableParameter);
+            return this.jumpTestsParam(jumpableParameter, 'jumpTestsParamByTrade');
         }
 
         return false;
@@ -464,13 +484,13 @@ class Strategy {
 
     checkJumpTestsParamByEarning(jumpableParameter, current) {
         if (current.earning <= this.jumpTestsParamByEarning) {
-            return this.jumpTestsParam(jumpableParameter);
+            return this.jumpTestsParam(jumpableParameter, 'jumpTestsParamByEarning');
         }
 
         return false;
     }
 
-    jumpTestsParam(jumpableParameter) {
+    jumpTestsParam(jumpableParameter, jumpName) {
         let jumped = false;
         // determine the number of cursor to jump
         for (
@@ -479,11 +499,14 @@ class Strategy {
             index = this.parameters[jumpableParameter].cleanFloat(index + this.parameters[jumpableParameter].increment)
         ) {
             this.jumpTestStack++;
+            this.jumpedTest[jumpName]++;
             jumped = true;
         }
 
         if (jumped) {
-            this.jumpTestStack--; // remove the getCurrent test, because already tested
+            // remove the getCurrent test, because already tested
+            this.jumpTestStack--;
+            this.jumpedTest[jumpName]--;
         }
 
         return jumped;
@@ -492,6 +515,7 @@ class Strategy {
     checkJumpTestByEarning(current) {
         if (current.earning <= this.jumpTestByEarning) {
             this.jumpTestStack++;
+            this.jumpedTest['jumpTestByEarning']++;
             return true;
         }
 
@@ -501,6 +525,7 @@ class Strategy {
     checkJumpTestByTrade(current) {
         if (current.trades <= this.jumpTestByTrade) {
             this.jumpTestStack++;
+            this.jumpedTest['jumpTestByTrade']++;
             return true;
         }
 
@@ -515,6 +540,7 @@ class Strategy {
 
         if (current.earning <= this.jumpTestByEarningMinus && current.earning < previous.earning) {
             this.jumpTestStack++;
+            this.jumpedTest['jumpTestByEarningMinus']++;
             return true;
         }
 
@@ -1054,6 +1080,6 @@ console.log(`
     // 2. init with options
     strat1.init();
 
-    // start !
+    // 3. start !
     strat1.start();
 `);
