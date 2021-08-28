@@ -4,10 +4,10 @@
    "version": "0.0.0",
    "author": "Cédric Ruiu",
    "devDependencies": {
-      "esbuild": "^0.12.9"
+      "esbuild": "^0.x"
    },
    "dependencies": {
-      "papaparse": "^5.3.1"
+      "papaparse": "^5.x"
    },
    "scripts": {
     "build": "esbuild src/app.js --bundle --format=esm --target=es2020 --minify-whitespace --minify-syntax --outfile=dist/hxrobot-script.js"
