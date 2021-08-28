@@ -175,7 +175,7 @@ export class Parameter {
 
         // override increment value from options
         if (this.options.increment || this.options.increment === 0) {
-            if (this.max < this.options.increment || this.options.increment < this.increment) {
+            if (this.options.increment < this.increment) {
                 console.warn(`
                     parameter: '${this.name}'
                     'increment' options '${this.options.increment}' isn't set correctly (increment: ${this.increment})
