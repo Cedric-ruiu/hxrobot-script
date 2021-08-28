@@ -142,6 +142,11 @@ export class Strategy {
         // get all the parameters elements
         const parametersDOM = this.indicator.querySelectorAll('.element');
         
+        // set debug mode
+        if (options.debug) {
+            this.debug = options.debug;
+        }
+
         // init each parameter with custom options
         // hidden parameters will be ignored
         let gap = 0;
@@ -153,7 +158,7 @@ export class Strategy {
                 if (typeof this.options[i - gap] !== 'undefined') {
                     parameterOptions = this.options[i - gap];
                 }
-                this.parameters.push(new Parameter(parametersDOM[i], parameterOptions));
+                this.parameters.push(new Parameter(parametersDOM[i], parameterOptions, this.debug));
             }
         }
 
@@ -187,10 +192,6 @@ export class Strategy {
             this.jumpedTest['jumpTestByEarningMinus'] = 0;
         }
 
-        if (options.debug) {
-            this.debug = options.debug;
-        }
-
         this.preCalculate();
     }
 
@@ -208,11 +209,10 @@ export class Strategy {
         // UI update start
         this.startInfo();
 
-        // reset all parameters and force saveResults
-        // avoid case of ignored first test because nothing to validate
+        // reset all parameters
         this.resetParameters();
 
-        // start all backtests, first will be ignored
+        // process backtests
         await this.backtest()
 
         // Track time

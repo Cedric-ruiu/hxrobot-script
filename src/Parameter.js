@@ -20,8 +20,10 @@ export class Parameter {
     };
     countMaxIncrement = 10;
     incrementDecimals = 0; // only for slider
+    debug = false;
 
-    constructor(elementDOM, options = {}) {
+    constructor(elementDOM, options = {}, debug = false) {
+        this.debug = debug;
         this.parameterDOM = elementDOM;
         this.name = this.parameterDOM.querySelector('.element-title').innerText;
         
@@ -214,10 +216,10 @@ export class Parameter {
     sliderIncrement(cursor = 'auto') {
         let incrementalValue = 0;
         if (cursor === 'auto') {   
-            // if (this.debug) console.log(`-> Parameter increment slider (auto) ${this.getCurrent()} + ${this.increment}`);
+            if (this.debug) console.log(`-> Parameter increment slider (auto) ${this.getCurrent()} + ${this.increment}`);
             incrementalValue = this.getCurrent() + this.increment;
         } else {
-            // if (this.debug) console.log(`-> Parameter increment slider (cursor ${cursor}) ${this.min} + (${this.increment} * ${cursor})`);
+            if (this.debug) console.log(`-> Parameter increment slider (cursor ${cursor}) ${this.min} + (${this.increment} * ${cursor})`);
             incrementalValue = this.min + (this.increment * cursor);
         }
 
@@ -260,6 +262,7 @@ export class Parameter {
     }
 
     switchSetValue(value = 'auto') {
+        if (this.debug) console.log(`-> Parameter switchSetValue (${value}) ${this.switchGetCurrent()}`);
         if (value === 'auto'
             || (value && !this.switchGetCurrent())
             || (!value && this.switchGetCurrent())) {
