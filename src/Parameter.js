@@ -117,7 +117,7 @@ export class Parameter {
                 break;
 
             case 'optionalSlider':
-                this.optionalSliderIncrement();
+                this.optionalSliderIncrement(cursor);
                 break;
         }
     }
@@ -353,10 +353,17 @@ export class Parameter {
     }
 
     optionalSliderIncrement(cursor = 'auto') {
-        if(this.switchGetCurrent()) {
-            this.sliderIncrement(cursor);
+        if (cursor === 'auto') {
+            if (this.switchGetCurrent()) {
+                this.sliderIncrement(cursor);
+            } else {
+                this.switchSetValue(true);
+            }
+        } else if (cursor === 0) {
+            this.switchSetValue(false);
         } else {
             this.switchSetValue(true);
+            this.sliderIncrement(cursor - 1);
         }
     }
 
