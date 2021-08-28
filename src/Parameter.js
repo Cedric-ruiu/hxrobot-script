@@ -29,6 +29,7 @@ export class Parameter {
         
         // parameter type detection 
         if (this.parameterDOM.querySelector('.element-input+.element-input')) {
+            this.name += ' (' + this.parameterDOM.querySelector('.input-true').innerText + ')';
             this.optionalSliderInit(options);
         } else if (this.parameterDOM.querySelector('.vue-js-switch')) {
             this.switchInit(options);
