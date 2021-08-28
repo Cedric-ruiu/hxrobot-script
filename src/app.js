@@ -1,4 +1,3 @@
-let Papa = require('papaparse');
 import {Strategy} from './Strategy'
 
 const importStrategy = new Strategy();

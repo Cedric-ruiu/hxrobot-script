@@ -1,3 +1,4 @@
+let Papa = require('papaparse');
 import {Parameter} from './Parameter';
 
 export class Strategy {
