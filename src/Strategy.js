@@ -98,7 +98,7 @@ export class Strategy {
             remainingTime = new Date(new Date().getTime() + (estimateTimeByTest * (this.backtestTotal - this.backtestNumber))).toLocaleString();
         }
 
-        content += ` (${remainingTime})`;
+        content += ` (${this.backtestNumber}/${this.backtestTotal}) ending at: ${remainingTime}`;
         this.setLabel(content);
     }
 
