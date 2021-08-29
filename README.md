@@ -22,6 +22,7 @@ If the backtest evaluation is not satisfactory, you can change parameter, indica
 | name | type | default | priority | description |
 |------|------|---------|----------|-------------|
 | `jumpTestAfterStart` | integer | `0` | cumulative | (1*) start backtests after a specific number of tests (useful if script has been stop and restart it) |
+| `jumpParamNumber` | boolean/integer | `false` | cumulative | by default this is the last active parameter who have jump processed, provide a number to choose another parameter |
 | `jumpTestsParamByTrade` | boolean / integer | `false` | 0 | (2*) if a test <= "x" trade, it **jump all following** cursor tests in the last parameter. (ex: set to 0 useful for Orderflow) |
 | `jumpTestsParamByEarning` | boolean / integer | `false` | 1 | (2*) if a test <= "x" earning, it **jump all following** cursor tests in the last parameter. (ex: set to -1000 useful for bad series) |
 | `jumpTestByEarning` | boolean / integer | `false` | 2 | (2*) if a test <= "x" earning, it **jump one** next cursor test in the last parameter |
@@ -36,6 +37,7 @@ If the backtest evaluation is not satisfactory, you can change parameter, indica
 ```javascript
 strat1.init({
     jumpTestAfterStart: 2135,
+    jumpParamNumber: 4,
     jumpTestsParamByTrade: 0,
     jumpTestsParamByEarning: -1000,
     jumpTestByEarning: -50,

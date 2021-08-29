@@ -135,6 +135,17 @@ export class Parameter {
         }
     }
 
+    isReadyToJump() {
+        if (this.getCurrent() !== false && (this.getCurrent() + this.increment) <= this.max)  {
+            // not the last cursor in this parameter, jump value is possible
+            return true;
+        } else {
+            // slider: on the last cursor, no jump
+            // optionalSlider: on the last cursor, no jump OR on disabled switch
+            return false;
+        }
+    }
+
     // SLIDER
 
     sliderInit(options = {}) {
