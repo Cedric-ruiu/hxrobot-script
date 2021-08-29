@@ -1,6 +1,6 @@
 # hxrobot-script
 
-copy/paste `dist/hxrobot-script.js` into Chrome dev console
+Copy/paste `dist/hxrobot-script.js` into a bookmark, prefix content with `javascript:` and load it on a strategy page. For the old way, you can copy/paste script into Firefox dev console (Chromium engine cut the websocket if tab isn't all the time active).
 
 And choose a strategy panel :
 

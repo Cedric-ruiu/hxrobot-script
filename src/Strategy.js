@@ -19,7 +19,7 @@ export class Strategy {
     jumpTestByEarning = false; // jump one following cursor test for last slider indic if earning smaller than previous
     jumpTestByTrade = false; // jump one following cursor test for last slider indic if earning smaller than previous
     jumpTestByEarningMinus = false; // jump one following cursor test for last slider indic if earning smaller than previous
-    jumpedTest = []; // list number of jumped backtests
+    jumpedTest = {}; // list number of jumped backtests
     backtestNumber = 0; // number of processed backtests (with jumped)
     backtestTotal = 0; // total of backtests
     debug = false;
@@ -165,27 +165,27 @@ export class Strategy {
 
         if (typeof options.jumpTestsParamByTrade !== 'undefined') {
             this.jumpTestsParamByTrade = options.jumpTestsParamByTrade;
-            this.jumpedTest['jumpTestsParamByTrade'] = 0;
+            this.jumpedTest.jumpTestsParamByTrade = 0;
         }
 
         if (typeof options.jumpTestsParamByEarning !== 'undefined') {
             this.jumpTestsParamByEarning = options.jumpTestsParamByEarning;
-            this.jumpedTest['jumpTestsParamByEarning'] = 0;
+            this.jumpedTest.jumpTestsParamByEarning = 0;
         }
 
         if (typeof options.jumpTestByEarning !== 'undefined') {
             this.jumpTestByEarning = options.jumpTestByEarning;
-            this.jumpedTest['jumpTestByEarning'] = 0;
+            this.jumpedTest.jumpTestByEarning = 0;
         }
 
         if (typeof options.jumpTestByTrade !== 'undefined') {
             this.jumpTestByTrade = options.jumpTestByTrade;
-            this.jumpedTest['jumpTestByTrade'] = 0;
+            this.jumpedTest.jumpTestByTrade = 0;
         }
 
         if (typeof options.jumpTestByEarningMinus !== 'undefined') {
             this.jumpTestByEarningMinus = options.jumpTestByEarningMinus;
-            this.jumpedTest['jumpTestByEarningMinus'] = 0;
+            this.jumpedTest.jumpTestByEarningMinus = 0;
         }
 
         this.preCalculate();
@@ -226,50 +226,54 @@ export class Strategy {
     stop() {
         this.started = false;
 
-        console.log(`
-            --BACKTEST STOPPED--
-            To continue backtest, use same strat & init config, and add:
-                jumpTestAfterStart: ${this.backtestNumber + 1}
-            waiting last test... If nothing hapening, tap: 
-                strategy.export.result()
-        `);
+        console.group('--BACKTEST STOPPED--');
+        console.log('To continue backtest, use same strat & init config, and add:');
+        console.log('\tjumpTestAfterStart: ' + (this.backtestNumber + 1));
+        console.log('waiting last test... If nothing hapening, tap:');
+        console.log('\tstrategy.export.result()');
+        console.groupEnd();
     }
 
     startInfo() {
         this.interfaceDecorator('lock');
-        this.setLabel(`0% - starting...`);
+        this.setLabel('0% - starting...');
 
-        console.log(`
-            --BACKTEST STARTED--
-            start time: ${new Date(this.dateStart).toLocaleString()}
-            end time (estimate): ${new Date(new Date().getTime() + (this.estimateTimeByTest * this.backtestTotal)).toLocaleString()}
-        `);
+        console.group('--BACKTEST STARTED--');
+        console.table({
+            startTime: new Date(this.dateStart).toLocaleString(),
+            endTimeEstimate: new Date(new Date().getTime() + (this.estimateTimeByTest * this.backtestTotal)).toLocaleString(),
+        });
+        console.groupEnd();
     }
 
     endInfo() {
         this.interfaceDecorator('available');
-        this.setLabel(`100% - finish`);
+        this.setLabel('100% - finish');
 
         let totalJumpedTest = 0;
-        let infoJump = '';
 
         if (0 < this.jumpTestAfterStart) {
-            infoJump += `\t\t- jumpTestAfterStart: ${this.jumpTestAfterStart}\n`;
             totalJumpedTest += this.jumpTestAfterStart;
+            this.jumpedTest.jumpTestAfterStart = this.jumpTestAfterStart;
         }
 
         Object.entries(this.jumpedTest).forEach(([key, value]) => {
-            infoJump += `\t\- t${key}: ${value}\n`;
             totalJumpedTest += value;
         });
 
-        console.log(`
-            --BACKTEST END--
-            start time: ${new Date(this.dateStart).toLocaleString()}
-            end time: ${new Date(this.dateEnd).toLocaleString()}
-            tests: ${this.results.length}
-            jumped tests: ${totalJumpedTest}\n${infoJump}
-        `);
+        console.group('--BACKTEST END--');
+        console.table({
+            startTime: new Date(this.dateStart).toLocaleString(),
+            endTime: new Date(this.dateEnd).toLocaleString(),
+            tests: this.results.length,
+            jumpedTests: totalJumpedTest,
+        });
+        if(0 < totalJumpedTest) {
+            console.groupCollapsed('jumps details');
+            console.table(this.jumpedTest);
+            console.groupEnd();
+        }
+        console.groupEnd();
     }
 
     reset() {
@@ -290,7 +294,7 @@ export class Strategy {
         this.jumpTestByEarning = false;
         this.jumpTestByTrade = false;
         this.jumpTestByEarningMinus = false;
-        this.jumpedTest = [];
+        this.jumpedTest = {};
         this.backtestNumber = 0;
         this.backtestTotal = 0;
         this.debug = false;
@@ -512,7 +516,7 @@ export class Strategy {
     checkJumpTestByEarning(current) {
         if (current.earning <= this.jumpTestByEarning) {
             this.jumpTestStack++;
-            this.jumpedTest['jumpTestByEarning']++;
+            this.jumpedTest.jumpTestByEarning++;
             return true;
         }
 
@@ -522,7 +526,7 @@ export class Strategy {
     checkJumpTestByTrade(current) {
         if (current.trades <= this.jumpTestByTrade) {
             this.jumpTestStack++;
-            this.jumpedTest['jumpTestByTrade']++;
+            this.jumpedTest.jumpTestByTrade++;
             return true;
         }
 
@@ -537,7 +541,7 @@ export class Strategy {
 
         if (current.earning <= this.jumpTestByEarningMinus && current.earning < previous.earning) {
             this.jumpTestStack++;
-            this.jumpedTest['jumpTestByEarningMinus']++;
+            this.jumpedTest.jumpTestByEarningMinus++;
             return true;
         }
 
@@ -592,20 +596,23 @@ export class Strategy {
 
         this.setLabel(`ready to start : ${evalEstimateEndingTime}`);
 
-        console.log(`
-            --BACKTEST EVALUATION--
-            indicator: ${evalIndicator}
-            number of tests: ${evalCountTest}
-            estimate time to full backtest indicator: ${evalEstimateDuringTime}
-            estimate ending time: ${evalEstimateEndingTime}
-            (option) debug: ${this.debug}
-            (option) jumpTestAfterStart: ${this.jumpTestAfterStart}
-            (option) jumpTestsParamByTrade : ${this.jumpTestsParamByTrade}
-            (option) jumpTestsParamByEarning : ${this.jumpTestsParamByEarning}
-            (option) jumpTestByEarning : ${this.jumpTestByEarning}
-            (option) jumpTestByTrade : ${this.jumpTestByTrade}
-            (option) jumpTestByEarningMinus : ${this.jumpTestByEarningMinus}
-        `);
+        console.group('--BACKTEST EVALUATION--');
+        console.log('indicator: ' + evalIndicator);
+        console.log('number of tests: ' + evalCountTest);
+        console.log('estimate time to full backtest indicator: ' + evalEstimateDuringTime);
+        console.log('estimate ending time: ' + evalEstimateEndingTime);
+        console.groupCollapsed('options');
+        console.table({
+            debug: this.debug,
+            jumpTestAfterStart: this.jumpTestAfterStart,
+            jumpTestsParamByTrade: this.jumpTestsParamByTrade,
+            jumpTestsParamByEarning: this.jumpTestsParamByEarning,
+            jumpTestByEarning: this.jumpTestByEarning,
+            jumpTestByTrade: this.jumpTestByTrade,
+            jumpTestByEarningMinus: this.jumpTestByEarningMinus,
+        });
+        console.groupEnd();
+        console.groupEnd();
     }
 
     saveResults() {
@@ -675,10 +682,9 @@ export class Strategy {
     }
 
     debug() {
-        console.log(
-            '--INDICATOR: ' + this.infos.currentIndicator + '\n' +
-            'countParameters: ' + this.parameters.length
-        );
+        console.log(`--INDICATOR: ${this.infos.currentIndicator}`);
+        console.log(`countParameters: ${this.parameters.length}`);
+
         this.parameters.forEach(parameter => {
             parameter.debug();
         });

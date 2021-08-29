@@ -66,23 +66,35 @@ export class Parameter {
     }
 
     debug() {
+        console.groupCollapsed(`--PARAMETER DEBUG--`);
+        console.table({
+            name: this.name,
+            type: this.type,
+            min: this.min,
+            max: this.max,
+            increment: this.increment,
+            current: this.getCurrent(),
+            count: this.count,
+        });
         switch (this.type) {
             case 'switch':
-                this.switchDebug();
+                console.log(this.switchDOM);
                 break;
         
             case 'slider':
-                this.sliderDebug();
+                console.log(this.sliderDOM);
                 break;
 
             case 'select':
-                this.selectDebug();
+                console.log(this.selectDOM);
                 break;
 
             case 'optionalSlider':
-                this.optionalSliderDebug();
+                console.log(this.sliderDOM);
+                console.log(this.switchDOM);
                 break;
         }
+        console.groupEnd()
     }
 
     getCurrent() {
@@ -233,18 +245,6 @@ export class Parameter {
         }
     }
 
-    sliderDebug() {
-        console.log(
-            '--PARAMETER: ' + this.name + '\n' +
-            'type: ' + this.type + '\n' +
-            'min: ' + this.min + '\n' +
-            'max: ' + this.max + '\n' +
-            'increment: ' + this.increment + '\n' +
-            'count: ' + this.count
-        );
-        console.log(this.sliderDOM);
-    }
-
     // SWITCH
 
     switchInit(options = {}) {
@@ -269,16 +269,6 @@ export class Parameter {
             || (!value && this.switchGetCurrent())) {
             this.switchDOM.click();
         }
-    }
-
-    switchDebug() {
-        console.log(
-            '--PARAMETER: ' + this.name + '\n' +
-            'type: ' + this.type + '\n' +
-            'current: ' + this.getCurrent() + '\n' +
-            'count: ' + this.count
-        );
-        console.log(this.switchDOM);
     }
 
     // SELECT
@@ -320,16 +310,6 @@ export class Parameter {
         }
     }
 
-    selectDebug() {
-        console.log(
-            '--PARAMETER: ' + this.name + '\n' +
-            'type: ' + this.type + '\n' +
-            'current: ' + this.getCurrent() + '\n' +
-            'count: ' + this.count
-        );
-        console.log(this.selectDOM);
-    }
-
     // OPTIONAL SLIDER (SWITCH + SLIDER)
 
     optionalSliderInit(options = {}) {
@@ -366,16 +346,6 @@ export class Parameter {
             this.switchSetValue(true);
             this.sliderIncrement(cursor - 1);
         }
-    }
-
-    optionalSliderDebug() {
-        console.log(
-            '--PARAMETER: ' + this.name + '\n' +
-            'type: ' + this.type + '\n' +
-            'current: ' + this.getCurrent() + '\n' +
-            'count: ' + this.count
-        );
-        console.log(this.selectDOM);
     }
 
     // Utils
