@@ -208,6 +208,11 @@ export class Strategy {
             } else {
                 this.jumpParamIndex = this.getJumpParamIndex();
             }
+
+            // UI mark
+            if (this.jumpParamIndex) {
+                this.parameters[this.jumpParamIndex].addMarkUI();
+            }
         }
 
         this.preCalculate();
@@ -299,6 +304,9 @@ export class Strategy {
     }
 
     reset() {
+        if (this.jumpParamIndex) {
+            this.parameters[this.jumpParamIndex].removeMarkUI();
+        }
         this.indicators = this.indicator = '';
         this.parameters = [];
         this.options = {};

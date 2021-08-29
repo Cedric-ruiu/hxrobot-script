@@ -146,6 +146,14 @@ export class Parameter {
         }
     }
 
+    addMarkUI() {
+        this.parameterDOM.style.border = '2px dotted #ed2939';
+    }
+
+    removeMarkUI() {
+        this.parameterDOM.style.border = '0px';
+    }
+
     // SLIDER
 
     sliderInit(options = {}) {
