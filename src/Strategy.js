@@ -28,14 +28,10 @@ export class Strategy {
     started = false; // security check for a started BT
 
     constructor(strategy = null) {
-        if (strategy === null) return;
-
-        if (typeof strategy === 'string') {
-            this.strategy = document.getElementById(strategy);
-        } else if (typeof strategy === 'number') {
+        if (typeof strategy === 'number') {
             this.strategy = document.querySelectorAll('.strategy')[strategy]
         } else {
-            this.strategy = strategy;
+            return;
         }
 
         this.interfaceDecorator('available');

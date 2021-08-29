@@ -2,17 +2,11 @@
 
 copy/paste `dist/hxrobot-script.js` into Chrome dev console
 
-and choose a strategy panel, several way to do this :
+And choose a strategy panel :
 
 ```javascript
-// preferred: provide the number (0-9)
+// provide the number (0-9)
 let strat1 = new Strategy(0);
-
-// provide element
-let strat1 = new Strategy(document.querySelector('.strategy'));
-
-// provide added ID name
-let strat1 = new Strategy('my-id-strategy');
 ```
 
 ## init
