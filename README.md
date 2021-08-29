@@ -69,7 +69,7 @@ strat1.init({
 
 ## Start backtest
 
-PC must not be on standby, and the chrome tab must be active during all time for the backtest. Just wait finish backtest, that automatically provide a download CSV.
+PC must not be on standby. Just wait finish backtest, that automatically provide a download CSV.
 
 ```javascript
 strat1.start();
