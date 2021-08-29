@@ -238,7 +238,7 @@ export class Strategy {
         this.interfaceDecorator('lock');
         this.setLabel('0% - starting...');
 
-        console.group('--BACKTEST STARTED--');
+        console.groupCollapsed('--BACKTEST STARTED--');
         console.table({
             startTime: new Date(this.dateStart).toLocaleString(),
             endTimeEstimate: new Date(new Date().getTime() + (this.estimateTimeByTest * this.backtestTotal)).toLocaleString(),
@@ -261,7 +261,7 @@ export class Strategy {
             totalJumpedTest += value;
         });
 
-        console.group('--BACKTEST END--');
+        console.groupCollapsed('--BACKTEST END--');
         console.table({
             startTime: new Date(this.dateStart).toLocaleString(),
             endTime: new Date(this.dateEnd).toLocaleString(),
@@ -269,7 +269,7 @@ export class Strategy {
             jumpedTests: totalJumpedTest,
         });
         if(0 < totalJumpedTest) {
-            console.groupCollapsed('jumps details');
+            console.group('jumps details');
             console.table(this.jumpedTest);
             console.groupEnd();
         }
