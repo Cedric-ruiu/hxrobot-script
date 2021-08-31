@@ -1,3 +1,5 @@
+import {cleanFloat, countDecimals} from './Utils';
+
 export class Parameter {
     parameterDOM
     name;
@@ -223,10 +225,10 @@ export class Parameter {
             }
         }
 
-        this.incrementDecimals = this.countDecimals(this.increment);
+        this.incrementDecimals = countDecimals(this.increment);
 
         this.count = 0;
-        for (let index = this.min; index <= this.max; index = this.cleanFloat(index + this.increment)) {
+        for (let index = this.min; index <= this.max; index = cleanFloat(index + this.increment)) {
             this.count++;
         }
     }
@@ -255,7 +257,7 @@ export class Parameter {
             incrementalValue = this.min + (this.increment * cursor);
         }
 
-        incrementalValue = this.cleanFloat(incrementalValue);
+        incrementalValue = cleanFloat(incrementalValue);
 
         if (incrementalValue <= this.max) {
             this.sliderSetValue(incrementalValue);
@@ -365,18 +367,5 @@ export class Parameter {
             this.switchSetValue(true);
             this.sliderIncrement(cursor - 1);
         }
-    }
-
-    // Utils
-
-    // https://stackoverflow.com/questions/17369098/simplest-way-of-getting-the-number-of-decimals-in-a-number-in-javascript
-    cleanFloat(floatNumber) {
-        floatNumber = floatNumber.toFixed(this.incrementDecimals);
-        return parseFloat(floatNumber);
-    }
-
-    countDecimals(value) {
-        if(Math.floor(value) === value) return 0;
-        return value.toString().split(".")[1].length || 0; 
     }
 }

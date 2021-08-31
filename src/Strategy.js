@@ -1,5 +1,6 @@
 let Papa = require('papaparse');
 import {Parameter} from './Parameter';
+import {msToTime} from './Utils';
 
 export class Strategy {
     label; // DOM element
@@ -607,12 +608,12 @@ export class Strategy {
             const remainingTime = totalTime - (this.jumpTestAfterStart * this.estimateTimeByTest);
             evalIndicator = `${this.infos.currentIndicator} (${this.parameters.length} parameters with ${countCursor} cursors)`;
             evalCountTest = `${countRemainingTest} (total: ${this.backtestTotal} // jump to: ${this.jumpTestAfterStart})`;
-            evalEstimateDuringTime = `${this.msToTime(remainingTime)} (total: ${this.msToTime(totalTime)})`;
+            evalEstimateDuringTime = `${msToTime(remainingTime)} (total: ${msToTime(totalTime)})`;
             evalEstimateEndingTime = `${new Date(new Date().getTime() + remainingTime).toLocaleString()}`;
         } else {
             evalIndicator = `${this.infos.currentIndicator} (${this.parameters.length} parameters with ${countCursor} cursors)`;
             evalCountTest = `${this.backtestTotal}`;
-            evalEstimateDuringTime = `${this.msToTime(totalTime)}`;
+            evalEstimateDuringTime = `${msToTime(totalTime)}`;
             evalEstimateEndingTime = `${new Date(new Date().getTime() + totalTime).toLocaleString()}`;
         }
 
@@ -688,19 +689,6 @@ export class Strategy {
 
     getPreviousResult() {
         return this.results[this.results.length - 2];
-    }
-
-    // UTILS
-
-    msToTime(ms) {
-        let seconds = (ms / 1000).toFixed(1);
-        let minutes = (ms / (1000 * 60)).toFixed(1);
-        let hours = (ms / (1000 * 60 * 60)).toFixed(1);
-        let days = (ms / (1000 * 60 * 60 * 24)).toFixed(1);
-        if (seconds < 60) return seconds + " Sec";
-        else if (minutes < 60) return minutes + " Min";
-        else if (hours < 24) return hours + " Hrs";
-        else return days + " Days"
     }
 
     debug() {
