@@ -403,7 +403,11 @@ export class Strategy {
             if (this.debug) console.log(`--> parameter[${paramIndex}] to work x${this.parameters[paramIndex].count}`);
             for (let i = 0; i < this.parameters[paramIndex].count; i++) {
                 if (this.debug) console.log(`--> parameter[${paramIndex}] in for i = [${i}] set increment`);
-                this.parameters[paramIndex].incrementValue(i);
+
+                // condition to fast jump with 'jumpTestAfterStart' 
+                if (i < this.parameters[paramIndex].count - 1 || !this.jumpTestStack) {
+                    this.parameters[paramIndex].incrementValue(i);
+                }
 
                 await this.backtestParam(paramIndex);
             }
