@@ -280,14 +280,14 @@ export class Strategy {
 
         let totalJumpedTest = 0;
 
+        Object.entries(this.jumpedTest).forEach(([key, value]) => {
+            totalJumpedTest += value;
+        });
+
         if (0 < this.jumpTestAfterStart) {
             totalJumpedTest += this.jumpTestAfterStart;
             this.jumpedTest.jumpTestAfterStart = this.jumpTestAfterStart;
         }
-
-        Object.entries(this.jumpedTest).forEach(([key, value]) => {
-            totalJumpedTest += value;
-        });
 
         console.groupCollapsed('--BACKTEST END--');
         console.table({
