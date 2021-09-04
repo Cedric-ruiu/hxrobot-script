@@ -294,13 +294,9 @@ export class Strategy {
             startTime: new Date(this.dateStart).toLocaleString(),
             endTime: new Date(this.dateEnd).toLocaleString(),
             tests: this.results.length,
-            jumpedTests: totalJumpedTest,
+            TOTALjumpedTests: totalJumpedTest,
+            ...this.jumpedTest
         });
-        if(0 < totalJumpedTest) {
-            console.group('jumps details');
-            console.table(this.jumpedTest);
-            console.groupEnd();
-        }
         console.groupEnd();
     }
 
