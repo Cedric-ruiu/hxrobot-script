@@ -97,7 +97,7 @@ export class Strategy {
         if(this.backtestNumber === 0) {
             remainingTime = new Date(new Date().getTime() + (this.estimateTimeByTest * this.backtestTotal)).toLocaleString();
         } else {
-            const estimateTimeByTest = (new Date().getTime() - this.dateStart) / this.backtestNumber;
+            const estimateTimeByTest = (new Date().getTime() - this.dateStart) / (this.backtestNumber - this.jumpTestAfterStart);
             remainingTime = new Date(new Date().getTime() + (estimateTimeByTest * (this.backtestTotal - this.backtestNumber))).toLocaleString();
         }
 
