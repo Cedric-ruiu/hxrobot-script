@@ -10,8 +10,8 @@ export function msToTime(ms) {
 }
 
 // https://stackoverflow.com/questions/17369098/simplest-way-of-getting-the-number-of-decimals-in-a-number-in-javascript
-export function cleanFloat(floatNumber) {
-    floatNumber = floatNumber.toFixed(this.incrementDecimals);
+export function cleanFloat(floatNumber, incrementDecimals = 1) {
+    floatNumber = floatNumber.toFixed(incrementDecimals);
     return parseFloat(floatNumber);
 }
 

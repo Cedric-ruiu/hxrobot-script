@@ -1,6 +1,6 @@
 let Papa = require('papaparse');
 import {Parameter} from './Parameter';
-import {msToTime} from './Utils';
+import {cleanFloat, msToTime} from './Utils';
 
 export class Strategy {
     label; // DOM element
@@ -520,7 +520,7 @@ export class Strategy {
         for (
             let index = this.parameters[this.jumpParamIndex].getCurrent();
             index <= this.parameters[this.jumpParamIndex].max;
-            index = this.parameters[this.jumpParamIndex].cleanFloat(index + this.parameters[this.jumpParamIndex].increment)
+            index = cleanFloat(index + this.parameters[this.jumpParamIndex].increment, this.parameters[this.jumpParamIndex].incrementDecimals)
         ) {
             this.jumpTestStack++;
             this.jumpedTest[jumpName]++;

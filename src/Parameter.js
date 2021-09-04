@@ -228,7 +228,7 @@ export class Parameter {
         this.incrementDecimals = countDecimals(this.increment);
 
         this.count = 0;
-        for (let index = this.min; index <= this.max; index = cleanFloat(index + this.increment)) {
+        for (let index = this.min; index <= this.max; index = cleanFloat(index + this.increment, this.incrementDecimals)) {
             this.count++;
         }
     }
@@ -257,7 +257,7 @@ export class Parameter {
             incrementalValue = this.min + (this.increment * cursor);
         }
 
-        incrementalValue = cleanFloat(incrementalValue);
+        incrementalValue = cleanFloat(incrementalValue, this.incrementDecimals);
 
         if (incrementalValue <= this.max) {
             this.sliderSetValue(incrementalValue);
