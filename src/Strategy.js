@@ -46,66 +46,6 @@ export class Strategy {
         }
     };
 
-    interfaceDecorator(state) {
-        switch (state) {
-            case 'available':
-                this.strategy.style.border = '3px dashed #00FF00';
-                break;
-            case 'lock':
-                this.strategy.style.border = '3px dashed #ed2939';
-                break;
-            default:
-                break;
-        }
-    }
-
-    insertLabel() {
-        this.label = this.strategy.querySelector('.cr-label');
-
-        if (!this.label) {
-            this.strategy.style.position = 'relative';
-
-            const label = document.createElement("div");
-            label.style.position = 'absolute';
-            label.style.color = '#fff';
-            label.style.top = '45px';
-            label.style.left = '0';
-            label.style.backgroundColor = '#00FF00';
-            label.style.padding = '5px 10px';
-            label.style.zIndex = '5';
-            label.classList.add('cr-label');
-
-            this.strategy.appendChild(label);
-
-            this.label = this.strategy.querySelector('.cr-label');
-        }
-
-        this.setLabel('script loaded');
-    }
-
-    setLabel(content) {
-        this.label.innerHTML = content;
-    }
-
-    updateLabelProgress() {
-        // show %
-        let content = (this.backtestNumber / this.backtestTotal) * 100;
-        content = Number.parseFloat(content).toFixed(1);
-        content += '%';
-        
-        // show remaining time
-        let remainingTime = '';
-        if(this.backtestNumber === 0) {
-            remainingTime = new Date(new Date().getTime() + (this.estimateTimeByTest * this.backtestTotal)).toLocaleString();
-        } else {
-            const estimateTimeByTest = (new Date().getTime() - this.dateStart) / (this.backtestNumber - this.jumpTestAfterStart);
-            remainingTime = new Date(new Date().getTime() + (estimateTimeByTest * (this.backtestTotal - this.backtestNumber))).toLocaleString();
-        }
-
-        content += ` (${this.backtestNumber}/${this.backtestTotal}) ending at: ${remainingTime}`;
-        this.setLabel(content);
-    }
-
     /**
      * strategy.init({3: {max: 5}, 5: {ignore: true}})
      * options[1].ignore = false;
@@ -570,6 +510,68 @@ export class Strategy {
         }
 
         return false;
+    }
+
+    // UI
+
+    interfaceDecorator(state) {
+        switch (state) {
+            case 'available':
+                this.strategy.style.border = '3px dashed #00FF00';
+                break;
+            case 'lock':
+                this.strategy.style.border = '3px dashed #ed2939';
+                break;
+            default:
+                break;
+        }
+    }
+
+    insertLabel() {
+        this.label = this.strategy.querySelector('.cr-label');
+
+        if (!this.label) {
+            this.strategy.style.position = 'relative';
+
+            const label = document.createElement("div");
+            label.style.position = 'absolute';
+            label.style.color = '#fff';
+            label.style.top = '45px';
+            label.style.left = '0';
+            label.style.backgroundColor = '#00FF00';
+            label.style.padding = '5px 10px';
+            label.style.zIndex = '5';
+            label.classList.add('cr-label');
+
+            this.strategy.appendChild(label);
+
+            this.label = this.strategy.querySelector('.cr-label');
+        }
+
+        this.setLabel('script loaded');
+    }
+
+    setLabel(content) {
+        this.label.innerHTML = content;
+    }
+
+    updateLabelProgress() {
+        // show %
+        let content = (this.backtestNumber / this.backtestTotal) * 100;
+        content = Number.parseFloat(content).toFixed(1);
+        content += '%';
+        
+        // show remaining time
+        let remainingTime = '';
+        if(this.backtestNumber === 0) {
+            remainingTime = new Date(new Date().getTime() + (this.estimateTimeByTest * this.backtestTotal)).toLocaleString();
+        } else {
+            const estimateTimeByTest = (new Date().getTime() - this.dateStart) / (this.backtestNumber - this.jumpTestAfterStart);
+            remainingTime = new Date(new Date().getTime() + (estimateTimeByTest * (this.backtestTotal - this.backtestNumber))).toLocaleString();
+        }
+
+        content += ` (${this.backtestNumber}/${this.backtestTotal}) ending at: ${remainingTime}`;
+        this.setLabel(content);
     }
 
     // MANAGE STATS
