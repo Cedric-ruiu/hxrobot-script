@@ -1,17 +1,12 @@
 import {cleanFloat, countDecimals} from './Utils';
 
 export class Parameter {
-    parameterDOM
     name;
     type;
-    sliderDOM;
-    sliderDotDOM;
-    inputDOM;
     current;
     min;
     max;
     increment;
-    switchDOM;
     count;
     options;
     optionsDefault = {
@@ -22,6 +17,13 @@ export class Parameter {
     };
     countMaxIncrement = 10;
     incrementDecimals = 0; // only for slider
+    
+    parameterDOM
+    sliderDOM;
+    sliderDotDOM;
+    inputDOM;
+    switchDOM;
+
     debug = false;
 
     constructor(elementDOM, options = {}, debug = false) {

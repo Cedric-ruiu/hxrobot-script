@@ -4,6 +4,7 @@ import {cleanFloat, msToTime} from './Utils';
 
 export class Strategy {
     static version = '1.2.1';
+    
     label; // DOM element
     strategy; // DOM element
     indicators; // DOM element
@@ -11,9 +12,11 @@ export class Strategy {
     parameters = []; // array of Object Parameters
     results = []; // raw storage of backtests results
     infos = {}; // raw storage of strategy info
+    
     estimateTimeByTest = 16000; // duration estimation for one backtest (server side)
     overloadTime = 30000; // max timing allowed to waiting a backtest
     intervalTime = 500; // interval time to check when server respond a backtest
+    
     jumpTestAfterStart = 0; // start backtests after un specific number of tests
     jumpParamNumber = false; // choose a specific param to jump, by default this is the last
     jumpParamIndex = false; // save the parameter index who jump
@@ -24,6 +27,7 @@ export class Strategy {
     jumpTestByTrade = false; // jump one following cursor test for last slider indic if earning smaller than previous
     jumpTestByEarningMinus = false; // jump one following cursor test for last slider indic if earning smaller than previous
     jumpedTest = {}; // list number of jumped backtests
+    
     backtestNumber = 0; // number of processed backtests (with jumped)
     backtestTotal = 0; // total of backtests
     debug = false;
