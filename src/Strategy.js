@@ -280,27 +280,19 @@ export class Strategy {
 
     async validate() {
         if (this.debug) console.log('-> Strategy start validate');
-        const validated = await new Promise(resolve => {
-            setTimeout(() => {
-                if (this.strategy.querySelector('.overlay').style.display === 'none') {
-                    // nothing to validate
-                    console.warn('nothing to validate');
-                    resolve(false);
-                    return;
-                }
 
-                this.strategy.querySelector('.perf .pill.save').click();
-                
-                resolve(true);
-                return;
-            }, 1000);
-        });
+        if (await this.validateClick()) {
+            let backtestRespond = await this.validateWaiting();
 
-        if (validated) {
-            await this.validateWaiting();
+            while (!backtestRespond && this.started) {
+                if (this.debug) console.log('-> While force update');
+                this.forceUpdateBT();
+                await this.validateClick();
+                backtestRespond = await this.validateWaiting();
+            }
 
-            // tricks: add 500 milliseconds to be sure that correct data is loaded (drawdown)
-            const waitPerfDataLoad = await new Promise(resolve => {
+            // tricks: add 500 milliseconds to be sure that correct data is updated (drawdown)
+            await new Promise(resolve => {
                 setTimeout(() => {
                     resolve(true);
                     return;
@@ -315,17 +307,38 @@ export class Strategy {
         return true;
     }
 
+    async validateClick() {
+        return await new Promise(resolve => {
+            setTimeout(() => {
+                if (this.strategy.querySelector('.overlay').style.display === 'none') {
+                    // nothing to validate
+                    console.warn('nothing to validate');
+                    resolve(false);
+                    return;
+                }
+
+                this.strategy.querySelector('.perf .pill.save').click();
+                
+                resolve(true);
+                return;
+            }, 1000);
+        });
+    }
+
     async validateWaiting() {
         return await new Promise(resolve => {
+            let duration = 0;
             const interval = setInterval(() => {
-                let duration = 0;
                 if (this.strategy.querySelector('.graph').style.opacity === '1') {
                     resolve(true);
                     clearInterval(interval);
                     return true;
                 } else if(this.overloadTime < duration) {
                     // over timing, stop all
-                    throw new Error(`overload time (${this.overloadTime / 1000}s), stopping backtests...`);
+                    resolve(false);
+                    clearInterval(interval);
+                    console.warn(`Overload time (${this.overloadTime / 1000}s), revalidate backtest...`);
+                    return false;
                 }
                 duration += this.intervalTime;
             }, this.intervalTime);
@@ -382,6 +395,31 @@ export class Strategy {
         }
 
         return true;
+    }
+
+    forceUpdateBT() {
+        const i = this.getLastParamActiveIndex();
+
+        if (this.parameters[i].type === 'switch') {
+            this.parameters[i].switchSetValue();
+            return true;
+        }
+
+        if (this.parameters[i].min <= this.parameters[i].getCurrent() - this.parameters[i].increment) {
+            this.parameters[i].decrementValue();
+        } else {
+            this.parameters[i].incrementValue();
+        }
+    }
+
+    getLastParamActiveIndex() {
+        for (let i = this.parameters.length - 1; i >= 0; i--) {
+            if (!this.parameters[i].options.ignore)  {
+                return i;
+            }
+        }
+
+        return 0;
     }
 
     // JUMP
