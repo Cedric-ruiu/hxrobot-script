@@ -23,9 +23,12 @@ export class Strategy {
     jumpTestStack = 0; // current stacking jump test
     jumpTestsParamByTrade = false; // jump all following cursor test for last slider indic if trade === value
     jumpTestsParamByEarning = false; // jump all following cursor test for last slider indic if earning smaller than value
-    jumpTestByEarning = false; // jump one following cursor test for last slider indic if earning smaller than previous
-    jumpTestByTrade = false; // jump one following cursor test for last slider indic if earning smaller than previous
-    jumpTestByEarningMinus = false; // jump one following cursor test for last slider indic if earning smaller than previous
+    jump3TestByEarning = false; // jump 3 tests by compare earning
+    jump2TestByEarning = false; // jump 2 tests by compare earning
+    jump1TestByEarning = false; // jump one test by compare earning
+    jumpTestByTrade = false; // jump one test by compare trade
+    jumpTestByWinrate = false; // jump one test by compare winrate
+    jumpTestByEarningMinus = false; // jump one test for last slider indic if earning smaller than previous
     jumpedTest = {}; // list number of jumped backtests
     
     backtestNumber = 0; // number of processed backtests (with jumped)
@@ -121,14 +124,29 @@ export class Strategy {
             this.jumpedTest.jumpTestsParamByEarning = 0;
         }
 
-        if (typeof options.jumpTestByEarning !== 'undefined') {
-            this.jumpTestByEarning = options.jumpTestByEarning;
-            this.jumpedTest.jumpTestByEarning = 0;
+        if (typeof options.jump3TestByEarning !== 'undefined') {
+            this.jump3TestByEarning = options.jump3TestByEarning;
+            this.jumpedTest.jump3TestByEarning = 0;
+        }
+
+        if (typeof options.jump2TestByEarning !== 'undefined') {
+            this.jump2TestByEarning = options.jump2TestByEarning;
+            this.jumpedTest.jump2TestByEarning = 0;
+        }
+
+        if (typeof options.jump1TestByEarning !== 'undefined') {
+            this.jump1TestByEarning = options.jump1TestByEarning;
+            this.jumpedTest.jump1TestByEarning = 0;
         }
 
         if (typeof options.jumpTestByTrade !== 'undefined') {
             this.jumpTestByTrade = options.jumpTestByTrade;
             this.jumpedTest.jumpTestByTrade = 0;
+        }
+
+        if (typeof options.jumpTestByWinrate !== 'undefined') {
+            this.jumpTestByWinrate = options.jumpTestByWinrate;
+            this.jumpedTest.jumpTestByWinrate = 0;
         }
 
         if (typeof options.jumpTestByEarningMinus !== 'undefined') {
@@ -138,8 +156,11 @@ export class Strategy {
 
         if (this.jumpTestsParamByTrade !== false 
             || this.jumpTestsParamByEarning !== false
-            || this.jumpTestByEarning !== false
+            || this.jump3TestByEarning !== false
+            || this.jump2TestByEarning !== false
+            || this.jump1TestByEarning !== false
             || this.jumpTestByTrade !== false
+            || this.jumpTestByWinrate !== false
             || this.jumpTestByEarningMinus !== false) {
             if (this.options.jumpParamNumber) {
                 this.jumpParamNumber = this.options.jumpParamNumber;
@@ -265,8 +286,11 @@ export class Strategy {
         this.jumpTestStack = 0;
         this.jumpTestsParamByTrade = false;
         this.jumpTestsParamByEarning = false;
-        this.jumpTestByEarning = false;
+        this.jump3TestByEarning = false;
+        this.jump2TestByEarning = false;
+        this.jump1TestByEarning = false;
         this.jumpTestByTrade = false;
+        this.jumpTestByWinrate = false;
         this.jumpTestByEarningMinus = false;
         this.jumpedTest = {};
         this.backtestNumber = 0;
@@ -389,7 +413,7 @@ export class Strategy {
             
             if (!this.jumpTestStack) {
                 await this.validate();
-                this.checkJumpTest();
+                this.addJump();
             } else {
                 this.jumpTestStack--;
             }
@@ -445,10 +469,11 @@ export class Strategy {
         return false;
     }
 
-    checkJumpTest() {
+    addJump() {
         // enough data to compare
-        if (this.jumpParamIndex && 1 < this.results.length) {
-            if (this.parameters[this.jumpParamIndex].isReadyToJump()) {
+        if (this.jumpParamIndex && this.parameters[this.jumpParamIndex].isReadyToJump()) {
+            const remainingCursor = this.parameters[this.jumpParamIndex].getRemainingCursor();
+            if (remainingCursor) {
                 const current = this.getCurrentResult();
                 let jumped = false;
 
@@ -463,17 +488,32 @@ export class Strategy {
                 }
 
                 // Priority 2
-                if (!jumped && this.jumpTestByEarning !== false) {
-                    jumped = this.checkJumpTestByEarning(current);
+                if (!jumped && this.jump3TestByEarning !== false && 3 <= remainingCursor) {
+                    jumped = this.checkJump3TestByEarning(current);
                 }
 
                 // Priority 3
+                if (!jumped && this.jump2TestByEarning !== false && 2 <= remainingCursor) {
+                    jumped = this.checkJump2TestByEarning(current);
+                }
+
+                // Priority 4
+                if (!jumped && this.jump1TestByEarning !== false) {
+                    jumped = this.checkJump1TestByEarning(current);
+                }
+
+                // Priority 5
                 if (!jumped && this.jumpTestByTrade !== false) {
                     jumped = this.checkJumpTestByTrade(current);
                 }
 
-                // Priority 4
-                if (!jumped && this.jumpTestByEarningMinus !== false) {
+                // Priority 6
+                if (!jumped && this.jumpTestByWinrate !== false) {
+                    jumped = this.checkJumpTestByWinrate(current);
+                }
+
+                // Priority 7
+                if (!jumped && 1 < this.results.length && this.jumpTestByEarningMinus !== false) {
                     const previous = this.getPreviousResult();
                     jumped = this.checkJumpTestByEarningMinus(current, previous);
                 }
@@ -519,10 +559,30 @@ export class Strategy {
         return jumped;
     }
 
-    checkJumpTestByEarning(current) {
-        if (current.earning <= this.jumpTestByEarning) {
+    checkJump3TestByEarning(current) {
+        if (current.earning <= this.jump3TestByEarning) {
+            this.jumpTestStack += 3;
+            this.jumpedTest.jump3TestByEarning += 3;
+            return true;
+        }
+
+        return false;
+    }
+
+    checkJump2TestByEarning(current) {
+        if (current.earning <= this.jump2TestByEarning) {
+            this.jumpTestStack += 2;
+            this.jumpedTest.jump2TestByEarning += 2;
+            return true;
+        }
+
+        return false;
+    }
+
+    checkJump1TestByEarning(current) {
+        if (current.earning <= this.jump1TestByEarning) {
             this.jumpTestStack++;
-            this.jumpedTest.jumpTestByEarning++;
+            this.jumpedTest.jump1TestByEarning++;
             return true;
         }
 
@@ -533,6 +593,16 @@ export class Strategy {
         if (current.trades <= this.jumpTestByTrade) {
             this.jumpTestStack++;
             this.jumpedTest.jumpTestByTrade++;
+            return true;
+        }
+
+        return false;
+    }
+
+    checkJumpTestByWinrate(current) {
+        if (current.winrate <= this.jumpTestByWinrate) {
+            this.jumpTestStack++;
+            this.jumpedTest.jumpTestByWinrate++;
             return true;
         }
 
@@ -675,8 +745,11 @@ export class Strategy {
             jumpTestAfterStart: this.jumpTestAfterStart,
             jumpTestsParamByTrade: this.jumpTestsParamByTrade,
             jumpTestsParamByEarning: this.jumpTestsParamByEarning,
-            jumpTestByEarning: this.jumpTestByEarning,
+            jump3TestByEarning: this.jump3TestByEarning,
+            jump2TestByEarning: this.jump2TestByEarning,
+            jump1TestByEarning: this.jump1TestByEarning,
             jumpTestByTrade: this.jumpTestByTrade,
+            jumpTestByWinrate: this.jumpTestByWinrate,
             jumpTestByEarningMinus: this.jumpTestByEarningMinus,
         });
         console.groupEnd();

@@ -25,9 +25,12 @@ If the backtest evaluation is not satisfactory, you can change parameter, indica
 | `jumpParamNumber` | boolean/integer | `false` | cumulative | by default this is the last active parameter who have jump processed, provide a number to choose another parameter |
 | `jumpTestsParamByTrade` | boolean / integer | `false` | 0 | (2*) if a test <= "x" trade, it **jump all following** cursor tests in the last parameter. (ex: set to 0 useful for Orderflow) |
 | `jumpTestsParamByEarning` | boolean / integer | `false` | 1 | (2*) if a test <= "x" earning, it **jump all following** cursor tests in the last parameter. (ex: set to -1000 useful for bad series) |
-| `jumpTestByEarning` | boolean / integer | `false` | 2 | (2*) if a test <= "x" earning, it **jump one** next cursor test in the last parameter |
-| `jumpTestByTrade` | boolean / integer | `false` | 3 | (2*) if a test <= "x" trade, it **jump one** next cursor test in the last parameter |
-| `jumpTestByEarningMinus` | boolean / integer | `false` | 4 | (2*) if a test <= "x" earning and if it's smaller that the previous one, it **jump one** next cursor test in the last parameter |
+| `jump3TestByEarning` | boolean / integer | `false` | 2 | (2*) if a test <= "x" earning, it **jump 3** next cursor tests in the last parameter |
+| `jump2TestByEarning` | boolean / integer | `false` | 3 | (2*) if a test <= "x" earning, it **jump 2** next cursor tests in the last parameter |
+| `jump1TestByEarning` | boolean / integer | `false` | 4 | (2*) if a test <= "x" earning, it **jump one** next cursor test in the last parameter |
+| `jumpTestByTrade` | boolean / integer | `false` | 5 | (2*) if a test <= "x" trade, it **jump one** next cursor test in the last parameter |
+| `jumpTestByWinrate` | boolean / integer | `false` | 6 | (2*) if a test <= "x" winrate, it **jump one** next cursor test in the last parameter |
+| `jumpTestByEarningMinus` | boolean / integer | `false` | 7 | (2*) if a test <= "x" earning and if it's smaller that the previous one, it **jump one** next cursor test in the last parameter |
 | `debug` | boolean | `false` | cumulative | only to help debugging |
 
 (1*) : issue, maybe freeze interface several minute with huge value (+3000), and possibility that backtest process don't work.
@@ -40,8 +43,11 @@ strat1.init({
     jumpParamNumber: 4,
     jumpTestsParamByTrade: 0,
     jumpTestsParamByEarning: -1000,
-    jumpTestByEarning: -50,
+    jump3TestByEarning: -500,
+    jump2TestByEarning: -200,
+    jump1TestByEarning: -50,
     jumpTestByTrade: 25,
+    jumpTestByWinrate: 50,
     jumpTestByEarningMinus: -200,
     debug: true,
 });

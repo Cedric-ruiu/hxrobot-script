@@ -154,6 +154,15 @@ export class Parameter {
         }
     }
 
+    getRemainingCursor() {
+        let remainingCursor = 0;
+        for (let index = this.getCurrent(); index <= this.max; index = cleanFloat(index + this.increment, this.incrementDecimals)) {
+            remainingCursor++;
+        }
+
+        return remainingCursor;
+    }
+
     addMarkUI() {
         this.parameterDOM.style.border = '2px dotted #ed2939';
     }
