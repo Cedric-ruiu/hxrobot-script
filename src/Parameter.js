@@ -139,9 +139,9 @@ export class Parameter {
         }
     }
 
-    decrementValue(cursor = 'decrement') {
+    /*decrementValue(cursor = 'decrement') {
         this.incrementValue(cursor);
-    }
+    }*/
 
     isReadyToJump() {
         if (this.getCurrent() !== false && (this.getCurrent() + this.increment) <= this.max)  {
@@ -267,10 +267,10 @@ export class Parameter {
         if (cursor === 'increment') {   
             if (this.debug) console.log(`-> Parameter increment slider ${this.getCurrent()} + ${this.increment}`);
             incrementalValue = this.getCurrent() + this.increment;
-        } else if (cursor === 'decrement') {
+        } /*else if (cursor === 'decrement') {
             if (this.debug) console.log(`-> Parameter decrement slider ${this.getCurrent()} + ${this.increment}`);
             incrementalValue = this.getCurrent() - this.increment;
-        } else {
+        }*/ else {
             if (this.debug) console.log(`-> Parameter set cursor slider (cursor: ${cursor}) ${this.min} + (${this.increment} * ${cursor})`);
             incrementalValue = this.min + (this.increment * cursor);
         }
@@ -304,7 +304,7 @@ export class Parameter {
     switchSetValue(value = 'increment') {
         if (this.debug) console.log(`-> Parameter switchSetValue (${value}) ${this.switchGetCurrent()}`);
         if (value === 'increment'
-            || value === 'decrement'
+            /*|| value === 'decrement'*/
             || (value && !this.switchGetCurrent())
             || (!value && this.switchGetCurrent())) {
             this.switchDOM.click();
@@ -345,9 +345,9 @@ export class Parameter {
         let newValue = 0;
         if (cursor === 'increment') {
             newValue = this.getCurrent() + this.increment;
-        } else if (cursor === 'decrement') {
+        } /*else if (cursor === 'decrement') {
             newValue = this.getCurrent() - this.increment;
-        } else {
+        }*/ else {
             newValue = this.min + (this.increment * cursor);
         }
 

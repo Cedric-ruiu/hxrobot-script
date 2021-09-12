@@ -1,6 +1,6 @@
 let Papa = require('papaparse');
 import {Parameter} from './Parameter';
-import {cleanFloat, msToTime} from './Utils';
+import {cleanFloat, msToTime, sleep} from './Utils';
 
 export class Strategy {
     static version = '1.3.0';
@@ -314,18 +314,13 @@ export class Strategy {
 
             while (!backtestRespond && this.started) {
                 if (this.debug) console.log('-> While force update');
-                this.forceUpdateBT();
+                await this.forceUpdateBT();
                 await this.validateClick();
                 backtestRespond = await this.validateWaiting();
             }
 
             // tricks: add 500 milliseconds to be sure that correct data is updated (drawdown)
-            await new Promise(resolve => {
-                setTimeout(() => {
-                    resolve(true);
-                    return;
-                }, 500);
-            });
+            await sleep(500);
         }
 
         this.saveResults();
@@ -336,21 +331,17 @@ export class Strategy {
     }
 
     async validateClick() {
-        return await new Promise(resolve => {
-            setTimeout(() => {
-                if (this.strategy.querySelector('.overlay').style.display === 'none') {
-                    // nothing to validate
-                    console.warn('nothing to validate');
-                    resolve(false);
-                    return;
-                }
+        await sleep(1000);
 
-                this.strategy.querySelector('.perf .pill.save').click();
-                
-                resolve(true);
-                return;
-            }, 1000);
-        });
+        if (this.strategy.querySelector('.overlay').style.display === 'none') {
+            // nothing to validate
+            console.warn('nothing to validate');
+            return false;
+        }
+
+        this.strategy.querySelector('.perf .pill.save').click();
+
+        return true;
     }
 
     async validateWaiting() {
@@ -425,29 +416,27 @@ export class Strategy {
         return true;
     }
 
-    forceUpdateBT() {
-        const i = this.getLastParamActiveIndex();
-
-        if (this.parameters[i].type === 'switch') {
-            this.parameters[i].switchSetValue();
-            return true;
-        }
-
-        if (this.parameters[i].min <= this.parameters[i].getCurrent() - this.parameters[i].increment) {
-            this.parameters[i].decrementValue();
-        } else {
-            this.parameters[i].incrementValue();
-        }
+    async forceUpdateBT() {
+        await this.prepareStopLimitPanel();
+        
+        // update value  input
+        const inp = this.strategy.querySelector('.content-stop-limit input[type="number"]')
+        const ev = new Event('input');
+        inp.value = inp.value + 10;
+        inp.dispatchEvent(ev);
     }
 
-    getLastParamActiveIndex() {
-        for (let i = this.parameters.length - 1; i >= 0; i--) {
-            if (!this.parameters[i].options.ignore)  {
-                return i;
-            }
-        }
+    async prepareStopLimitPanel() {
+        // click on stop limit
+        this.strategy.querySelectorAll('.risk-management-container .title-right .name')[1].click();
 
-        return 0;
+        await sleep(500);
+
+        // check toggled switch
+        if (!this.strategy.querySelector('.content-stop-limit .vue-js-switch').classList.contains('toggled')) {
+            // click on switch
+            this.strategy.querySelector('.content-stop-limit .vue-js-switch').click()
+        }
     }
 
     // JUMP
