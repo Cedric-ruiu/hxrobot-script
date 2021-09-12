@@ -365,7 +365,7 @@ export class Strategy {
                     // over timing, stop all
                     resolve(false);
                     clearInterval(interval);
-                    console.warn(`Overload time (${this.overloadTime / 1000}s), revalidate backtest...`);
+                    console.warn(`${this.strategy.querySelector('.strategy-title').childNodes[0].innerText}: Overload time (${this.overloadTime / 1000}s) on BT n°${this.backtestNumber}, revalidate backtest...`);
                     return false;
                 }
                 duration += this.intervalTime;
