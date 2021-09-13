@@ -222,6 +222,8 @@ export class Parameter {
             }
         }
 
+        this.incrementDecimals = countDecimals(this.increment);
+
         // override increment value from options
         if (this.options.increment || this.options.increment === 0) {
             if (this.options.increment < this.increment) {
@@ -240,7 +242,14 @@ export class Parameter {
             }
         }
 
-        this.incrementDecimals = countDecimals(this.increment);
+        // new increment have less decimals ? ex: 0.01 to 0.1
+        if (countDecimals(this.increment) < this.incrementDecimals) {
+            this.incrementDecimals = countDecimals(this.increment);
+        }
+
+        this.increment = cleanFloat(this.increment, this.incrementDecimals)
+
+        if (this.debug) console.log(`init slider with count decimal: ${this.incrementDecimals} | increment: ${this.increment}`);
 
         this.count = 0;
         for (let index = this.min; index <= this.max; index = cleanFloat(index + this.increment, this.incrementDecimals)) {
