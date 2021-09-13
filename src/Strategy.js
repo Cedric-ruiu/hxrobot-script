@@ -422,7 +422,7 @@ export class Strategy {
         // update value  input
         const inp = this.strategy.querySelector('.content-stop-limit input[type="number"]')
         const ev = new Event('input');
-        inp.value = inp.value + 10;
+        inp.value = parseInt(inp.value) + 10;
         inp.dispatchEvent(ev);
     }
 
