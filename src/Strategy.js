@@ -314,7 +314,7 @@ export class Strategy {
 
             while (!backtestRespond && this.started) {
                 if (this.debug) console.log('-> While force update');
-                await this.forceUpdateBT();
+                await this.incrementStopLimitField();
                 await this.validateClick();
                 backtestRespond = await this.validateWaiting();
             }
@@ -416,8 +416,8 @@ export class Strategy {
         return true;
     }
 
-    async forceUpdateBT() {
-        await this.prepareStopLimitPanel();
+    async incrementStopLimitField() {
+        await this.prepareStopLimitField();
         
         // update value  input
         const inp = this.strategy.querySelector('.content-stop-limit input[type="number"]')
@@ -426,7 +426,7 @@ export class Strategy {
         inp.dispatchEvent(ev);
     }
 
-    async prepareStopLimitPanel() {
+    async prepareStopLimitField() {
         // click on stop limit
         this.strategy.querySelectorAll('.risk-management-container .title-right .name')[1].click();
 
