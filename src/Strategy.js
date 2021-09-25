@@ -33,6 +33,7 @@ export class Strategy {
     
     backtestNumber = 0; // number of processed backtests (with jumped)
     backtestTotal = 0; // total of backtests
+    countOverloadTime = 0;
     debug = false;
     dateStart = 0;
     dateEnd = 0;
@@ -206,7 +207,7 @@ export class Strategy {
         await this.incrementStopLimitField(10);
 
         // process backtests
-        await this.backtest()
+        await this.backtest();
 
         // Track time
         this.dateEnd = new Date().getTime();
@@ -262,6 +263,7 @@ export class Strategy {
         console.table({
             startTime: new Date(this.dateStart).toLocaleString(),
             endTime: new Date(this.dateEnd).toLocaleString(),
+            TOTALoverloadTime: this.countOverloadTime,
             tests: this.results.length,
             TOTALjumpedTests: totalJumpedTest,
             ...this.jumpedTest
@@ -296,6 +298,7 @@ export class Strategy {
         this.jumpTestByWinrate = false;
         this.jumpTestByEarningMinus = false;
         this.jumpedTest = {};
+        this.countOverloadTime = 0;
         this.backtestNumber = 0;
         this.backtestTotal = 0;
         this.debug = false;
@@ -356,7 +359,8 @@ export class Strategy {
                     clearInterval(interval);
                     return true;
                 } else if(this.overloadTime < duration) {
-                    // over timing, stop all
+                    // overload timing, stop waiting
+                    this.countOverloadTime++;
                     resolve(false);
                     clearInterval(interval);
                     console.warn(`${this.strategy.querySelector('.strategy-title').childNodes[0].innerText}: Overload time (${this.overloadTime / 1000}s) on BT n°${this.backtestNumber}, revalidate backtest...`);
