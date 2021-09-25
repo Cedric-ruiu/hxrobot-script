@@ -21,6 +21,8 @@ export class Strategy {
     jumpParamNumber = false; // choose a specific param to jump, by default this is the last
     jumpParamIndex = false; // save the parameter index who jump
     jumpTestStack = 0; // current stacking jump test
+    jumpAuto = false;
+    jumpAutoSeries = false;
     jumpTestsParamByTrade = false; // jump all following cursor test for last slider indic if trade === value
     jumpTestsParamByEarning = false; // jump all following cursor test for last slider indic if earning smaller than value
     jump3TestByEarning = false; // jump 3 tests by compare earning
@@ -38,6 +40,34 @@ export class Strategy {
     dateStart = 0;
     dateEnd = 0;
     started = false; // security check for a started BT
+
+    jumpAutoConfig = {
+        '5m': {
+            jump1TestByEarning: 0,
+            jump2TestByEarning: -1000,
+            jump3TestByEarning: -3500,
+            jumpTestByTrade: 20,
+            jumpTestByWinrate: 52,
+        },
+        '15m': {
+            jump1TestByEarning: 0,
+            jump2TestByEarning: -400,
+            jump3TestByEarning: -800,
+            jumpTestByTrade: 15,
+            jumpTestByWinrate: 52.5,
+        }
+    };
+
+    jumpAutoSeriesConfig = {
+        '5m': {
+            jumpTestsParamByTrade: 0,
+            jumpTestsParamByEarning: -5000,
+        },
+        '15m': {
+            jumpTestsParamByTrade: 0,
+            jumpTestsParamByEarning: -1200,
+        }
+    }
 
     constructor(strategy = null) {
         if (typeof strategy === 'number') {
@@ -115,6 +145,14 @@ export class Strategy {
             this.jumpTestStack += this.jumpTestAfterStart;
         }
 
+        // auto jump series - disabled by default
+        if (typeof options.jumpAutoSeries !== 'undefined' && options.jumpAutoSeries) {
+            if (typeof this.jumpAutoSeriesConfig[this.infos.timeframe] !== 'undefined') {
+                options.jumpTestsParamByTrade = this.jumpAutoSeriesConfig[this.infos.timeframe].jumpTestsParamByTrade;
+                options.jumpTestsParamByEarning = this.jumpAutoSeriesConfig[this.infos.timeframe].jumpTestsParamByEarning;
+            }
+        }
+
         if (typeof options.jumpTestsParamByTrade !== 'undefined') {
             this.jumpTestsParamByTrade = options.jumpTestsParamByTrade;
             this.jumpedTest.jumpTestsParamByTrade = 0;
@@ -123,6 +161,17 @@ export class Strategy {
         if (typeof options.jumpTestsParamByEarning !== 'undefined') {
             this.jumpTestsParamByEarning = options.jumpTestsParamByEarning;
             this.jumpedTest.jumpTestsParamByEarning = 0;
+        }
+
+        // auto jump - enabled by default
+        if (typeof options.jumpAuto === 'undefined' || options.jumpAuto) {
+            if (typeof this.jumpAutoConfig[this.infos.timeframe] !== 'undefined') {
+                options.jump3TestByEarning = this.jumpAutoConfig[this.infos.timeframe].jump3TestByEarning;
+                options.jump2TestByEarning = this.jumpAutoConfig[this.infos.timeframe].jump2TestByEarning;
+                options.jump1TestByEarning = this.jumpAutoConfig[this.infos.timeframe].jump1TestByEarning;
+                options.jumpTestByTrade = this.jumpAutoConfig[this.infos.timeframe].jumpTestByTrade;
+                options.jumpTestByWinrate = this.jumpAutoConfig[this.infos.timeframe].jumpTestByWinrate;
+            }
         }
 
         if (typeof options.jump3TestByEarning !== 'undefined') {
