@@ -202,6 +202,9 @@ export class Strategy {
         // reset all parameters
         this.resetParameters();
 
+        // reset stop limit field with minimal value
+        await this.incrementStopLimitField(10);
+
         // process backtests
         await this.backtest()
 
@@ -416,13 +419,17 @@ export class Strategy {
         return true;
     }
 
-    async incrementStopLimitField() {
+    async incrementStopLimitField(value = false) {
         await this.prepareStopLimitField();
         
         // update value  input
         const inp = this.strategy.querySelector('.content-stop-limit input[type="number"]')
         const ev = new Event('input');
-        inp.value = parseInt(inp.value) + 10;
+        if (value) {
+            inp.value = parseInt(value);
+        } else {
+            inp.value = parseInt(inp.value) + 10;
+        }
         inp.dispatchEvent(ev);
     }
 
