@@ -3,7 +3,7 @@ import {Parameter} from './Parameter';
 import {cleanFloat, msToTime, sleep} from './Utils';
 
 export class Strategy {
-    static version = '1.3.2';
+    static version = '1.4.0';
     
     label; // DOM element
     strategy; // DOM element
