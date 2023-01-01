@@ -1,3 +1,9 @@
+:warning::warning::warning:
+
+This script was a helper to automate strategies on the old platforme [hxrobot.io](hxrobot.io). You could perform thousands of tests on multiple strategies and save results statistics on the exported CSV. But time passed, HXRO had bought hxrobot and migrated to a new "Automated Trading" platform which no longer exists today, and finally FTX fell and impacted the entire Solana ecosystem (including HXRO). Feel free to explore code. That was fun and tricky to develop it. The goal was to use an automated script as quickly as possible. So a script to execute in console browser isn't the smartest and robust solution (maybe it's better to create an extension browser). But my solution was the fastest from a "time to market" point of view.
+
+:warning::warning::warning:
+
 # hxrobot-script
 
 Copy/paste `dist/hxrobot-script.js` into a bookmark, prefix content with `javascript:` and load it on a strategy page. For the old way, you can copy/paste script into Firefox dev console (Chromium engine cut the websocket if tab isn't all the time active).
